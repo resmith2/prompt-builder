@@ -2,7 +2,7 @@
 html { scroll-behavior: smooth; }
 body { background: #0f0f0d; color: #ece7dc; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 .grain::before {
-  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .06;
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: .06;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .field-input {
@@ -24,6 +24,7 @@ body { background: #0f0f0d; color: #ece7dc; font-family: Geist, system-ui, sans-
 /* Segmented rows wrap on wide screens; on phones they stay one row and scroll sideways, so pills never split mid-shape */
 .seg-row { display: inline-flex; flex-wrap: wrap; max-width: 100%; }
 @media (max-width: 639px) {
+  .field-input { font-size: 1rem; } /* iOS Safari zooms into inputs under 16px */
   .seg-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .seg-row::-webkit-scrollbar { display: none; }
 }

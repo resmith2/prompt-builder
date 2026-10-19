@@ -59,7 +59,7 @@ function fieldHTML(f, s) {
 function renderForms() {
   $('#forms').insertAdjacentHTML('beforeend', SKILLS.filter(s => s.ready).map(s =>
     `<form data-skill="${s.id}" class="space-y-10" autocomplete="off" onsubmit="return false">${s.groups.map(g =>
-      `<fieldset data-group class="space-y-5"><legend class="text-xs uppercase tracking-[.18em] text-accent/80 mb-5">${esc(g.title)}</legend>${g.fields.map(f => fieldHTML(f, s)).join('')}</fieldset>`
+      `<fieldset data-group class="min-w-0 space-y-5"><legend class="text-xs uppercase tracking-[.18em] text-accent/80 mb-5">${esc(g.title)}</legend>${g.fields.map(f => fieldHTML(f, s)).join('')}</fieldset>`
     ).join('')}</form>`
   ).join(''));
 }
