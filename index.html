@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skill Prompt Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<script src="https://cdn.tailwindcss.com/3.4.5"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Geist', 'system-ui', 'sans-serif'], mono: ['"Geist Mono"', 'ui-monospace', 'monospace'] },
+        colors: {
+          ink: '#0f0f0d', surface: '#171714', raised: '#1f1f1b', line: '#2c2b26',
+          paper: '#ece7dc', muted: '#948e80', accent: '#d8a55c'
+        }
+      }
+    }
+  };
+</script>
+<style>
+  :root { color-scheme: dark; }
+  html { scroll-behavior: smooth; }
+  body { background: #0f0f0d; color: #ece7dc; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .grain::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .field-input {
+    width: 100%; background: #171714; border: 1px solid #2c2b26; border-radius: .75rem;
+    padding: .7rem .9rem; color: #ece7dc; font-size: .95rem; transition: border-color .2s, background .2s;
+  }
+  .field-input::placeholder { color: #6b675d; }
+  .field-input:focus { outline: none; border-color: #d8a55c; background: #1f1f1b; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip span { display: inline-block; border: 1px solid #2c2b26; border-radius: 999px; padding: .35rem .8rem; font-size: .82rem; color: #948e80; cursor: pointer; transition: all .2s; }
+  .chip input:checked + span { background: #ece7dc; color: #0f0f0d; border-color: #ece7dc; }
+  .chip input:focus-visible + span, .seg input:focus-visible + span { outline: 2px solid #d8a55c; outline-offset: 2px; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span { display: block; padding: .55rem 1rem; border-radius: 999px; font-size: .88rem; color: #948e80; cursor: pointer; transition: all .25s; white-space: nowrap; }
+  .seg input:checked + span { background: #ece7dc; color: #0f0f0d; }
+  #prompt::-webkit-scrollbar { width: 8px; }
+  #prompt::-webkit-scrollbar-thumb { background: #2c2b26; border-radius: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="grain">
+<main class="overflow-x-hidden w-full max-w-full">
+
+  <!-- Builder -->
+  <section id="builder" class="px-4 sm:px-6 pt-12 md:pt-16 pb-24 bg-[radial-gradient(ellipse_at_top,rgba(216,165,92,.06),transparent_60%)]">
+    <div class="max-w-7xl mx-auto">
+      <h1 class="text-[clamp(1.75rem,3vw,2.5rem)] font-semibold tracking-[-0.03em] leading-[1.05]">Skill prompt builder</h1>
+
+      <!-- Skill picker -->
+      <div class="mt-10 flex flex-wrap gap-2" role="radiogroup" aria-label="Skill" id="skill-picker"></div>
+
+      <!-- Mode -->
+      <div class="mt-8 overflow-x-auto -mx-4 px-4">
+        <div class="inline-flex rounded-full border border-line bg-surface p-1" role="radiogroup" aria-label="What are you working on" id="mode-picker"></div>
+      </div>
+      <p id="mode-hint" class="mt-3 text-sm text-muted"></p>
+
+      <div class="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <form id="form" class="lg:col-span-7 space-y-10" autocomplete="off" onsubmit="return false"></form>
+
+        <div class="lg:col-span-5">
+          <div class="lg:sticky lg:top-24">
+            <div class="rounded-2xl border border-line bg-surface overflow-hidden">
+              <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line">
+                <label for="prompt" class="text-sm font-medium">Your prompt</label>
+                <div class="flex items-center gap-3">
+                  <span id="count" class="text-xs text-muted font-mono"></span>
+                  <button id="copy" type="button" class="rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5">
+                    <i class="ph ph-copy"></i><span>Copy</span>
+                  </button>
+                </div>
+              </div>
+              <textarea id="prompt" readonly spellcheck="false" class="block w-full h-[60vh] lg:h-[calc(100vh-12rem)] resize-none bg-transparent p-5 font-mono text-[13px] leading-relaxed text-paper/90 focus:outline-none"></textarea>
+            </div>
+            <p class="mt-3 text-xs text-muted">Anything in angle brackets is a slot you have not filled yet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="px-4 sm:px-6 pb-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="pt-8 border-t border-line flex flex-col sm:flex-row justify-between gap-4 text-sm text-muted">
+        <span>skillprompt. Prompt shapes for agent skills.</span>
+        <div class="flex gap-6">
+          <a href="https://www.tasteskill.dev/guide?view=full" target="_blank" rel="noopener" class="hover:text-paper">Taste guide</a>
+          <a href="https://github.com/Leonxlnx/taste-skill" target="_blank" rel="noopener" class="hover:text-paper">taste-skill on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<script>
+/* ---------- Skill definitions. Adding a skill = adding one object here. ---------- */
+
+const REQUIRED_LINE = 'Treat this skill file as the single source of truth for this task. Read it in full. If anything in this skill conflicts with your defaults, the skill wins.';
+
+const DESIGN_READ_FORMAT = `Use exactly this format:
+
+DESIGN READ
+  Brief in one sentence: <restate>
+  Direction: <minimalist | editorial | brutalist | soft | playful | other>, with one line on why
+  Type system: <font families, weight ladder, italic usage>
+  Color system: <bg, surface, ink, muted, accent, status colors>
+  Spacing and density: <scale, section rhythm, container widths>
+  Motion plan: <where, why, MOTION_INTENSITY 0 to 5>
+  Section list: <6 to 10 ordered sections with one-line purpose each>
+  Anti-slop notes: <patterns this brief explicitly avoids>
+  Risks: <what is hard about this brief and how the design handles it>
+
+Do not write code until I approve the design read.`;
+
+const FULL_AUDIT = `Run the full taste-skill audit on the output. For each gate, answer pass or fail and quote evidence from your own code or copy. Do not move on if anything fails.
+
+  Gate 1: Em-dash and en-dash audit. Search for U+2014 and U+2013. Both counts must be zero.
+  Gate 2: Pre-flight check. Every box in the skill's pre-flight list must honestly pass.
+  Gate 3: Section-layout repetition audit. Across all sections, at least 4 distinct layout families.
+  Gate 4: Image strategy audit. Per-section image plan, no cropped reuse, no Unsplash placeholders.
+  Gate 5: Hero discipline audit. Max 2 lines for the H1. Subhead under 20 words. CTA visible without scroll.
+  Gate 6: Theme audit. Color and shape consistency across the whole page. One page theme, not many.
+
+Report results inline before producing any new code.`;
+
+const TASTE = {
+  id: 'taste', name: 'Taste', ready: true,
+  modes: [
+    { id: 'full', label: 'Full page', hint: 'Build a page from scratch: full brief, design read, deliverable, audit.' },
+    { id: 'iterate', label: 'Iterate a section', hint: 'Redesign one weak section with a section-scoped design read and audit.' },
+    { id: 'add', label: 'Add a section', hint: 'Add one new section to an existing page without repeating its neighbors.' },
+    { id: 'audit', label: 'Audit output', hint: 'No new code. Run the six-gate audit on something the agent already built.' }
+  ],
+  variants: [
+    { id: 'v2', label: 'v2: design-taste-frontend', skill: 'design-taste-frontend', cmd: 'npx skills add https://github.com/Leonxlnx/taste-skill--skill "design-taste-frontend"' },
+    { id: 'v1', label: 'Legacy v1: design-taste-frontend-v1', skill: 'design-taste-frontend-v1', cmd: 'npx skills add https://github.com/Leonxlnx/taste-skill--skill "design-taste-frontend-v1"' },
+    { id: 'repo', label: 'Full repo: taste-skill', skill: 'taste-skill', cmd: 'npx skills add Leonxlnx/taste-skill' }
+  ],
+  // `brief: true` fields go in the Brief block, in this order.
+  groups: [
+    { title: 'Load the skill', fields: [
+      { id: 'load', label: 'Load method', type: 'seg', modes: '*', value: 'npx',
+        options: [['file', 'Workspace file'], ['npx', 'npx skills add'], ['paste', 'Paste SKILL.md']] },
+      { id: 'variant', label: 'Skill version', type: 'select', modes: '*', value: 'v2', optionsFrom: 'variants' }
+    ]},
+    { title: 'The work', fields: [
+      { id: 'section', label: 'Section to redesign', type: 'text', modes: ['iterate'], placeholder: 'Pricing, the hero, the features grid...' },
+      { id: 'problem', label: 'What is wrong with it now', type: 'textarea', modes: ['iterate'], placeholder: 'Three equal cards, generic icons, copy reads like a template.' },
+      { id: 'keep', label: 'What must stay', type: 'text', modes: ['iterate'], placeholder: 'Tier names and prices' },
+      { id: 'newSection', label: 'New section', type: 'text', modes: ['add'], placeholder: "What's new in v2" },
+      { id: 'newPurpose', label: 'What it must do', type: 'textarea', modes: ['add'], placeholder: 'Show the three biggest changes since v1 and link to the changelog.' },
+      { id: 'placement', label: 'Where it goes', type: 'text', modes: ['add'], placeholder: 'After features, before pricing' },
+      { id: 'target', label: 'What to audit', type: 'text', modes: ['audit'], placeholder: 'app/page.tsx, or the pricing section you just wrote' }
+    ]},
+    { title: 'Brief', fields: [
+      { id: 'pageKind', label: 'Page kind', brief: true, type: 'textarea', rows: 2, modes: ['full'], placeholder: 'Marketing landing, single section, dashboard route, settings page, etc.' },
+      { id: 'product', label: 'Product or brand', brief: true, type: 'textarea', rows: 2, modes: ['full', 'iterate', 'add'], placeholder: 'One line. What it is, who built it.' },
+      { id: 'audience', label: 'Audience', brief: true, type: 'textarea', rows: 2, modes: ['full', 'add'], placeholder: 'One line. Who reads this page and what they need.' },
+      { id: 'vibe', label: 'Vibe words', brief: true, type: 'textarea', rows: 2, modes: ['full', 'iterate', 'add'], placeholder: 'Three to five adjectives. Editorial, terminal-adjacent, calm. Or playful, dense, expressive. Or whatever fits.' },
+      { id: 'refs', label: 'Reference signals', brief: true, type: 'textarea', rows: 2, modes: ['full', 'iterate', 'add'], placeholder: 'Two to four sites or screenshots. Concrete sources of taste, not vibes.' },
+      { id: 'avoid', label: 'What to avoid', brief: true, type: 'chips', modes: ['full', 'iterate', 'add'], placeholder: 'Two to four explicit anti-patterns from the skill or from the brand. Glassmorphism, neon, fake dashboards, gradient text, etc.',
+        options: ['glassmorphism', 'neon glows', 'gradient text', 'fake screenshots', 'fake dashboards', 'fake stats', 'equal 3-column card grids', 'custom cursors'] },
+      { id: 'outOfScope', label: 'Out of scope', brief: true, type: 'textarea', rows: 2, modes: ['full', 'iterate', 'add'], placeholder: 'What not to build. Saves the agent from inventing pages you did not ask for.' }
+    ]},
+    { title: 'Deliverable and checks', fields: [
+      { id: 'deliverable', label: 'Deliverable', type: 'text', modes: ['full', 'iterate', 'add'], placeholder: 'One route: app/page.tsx', hint: 'One route, one component or one section.' },
+      { id: 'readFormat', label: 'Spell out the design read format in the prompt', type: 'check', modes: ['full', 'iterate', 'add'], value: true },
+      { id: 'auditLevel', label: 'Closing check', type: 'seg', modes: ['full', 'iterate', 'add'], value: 'full',
+        options: [['short', 'Pre-flight line'], ['full', 'Six-gate audit']] }
+    ]}
+  ],
+  build: buildTaste
+};
+
+const SKILLS = [
+  TASTE,
+  { id: 'spec-kit', name: 'Spec-Kit', ready: false },
+  { id: 'impeccable', name: 'Impeccable', ready: false },
+  { id: 'brandkit', name: 'Brandkit', ready: false }
+];
+
+function slot(val, label) { return (val || '').trim() || `<${label}>`; }
+
+function buildTaste(v, skill) {
+  const variant = skill.variants.find(x => x.id === v.variant) || skill.variants[0];
+  const out = [];
+  const lead = 'as your active skill for this conversation, in full, and treat it as the single source of truth that overrides defaults';
+
+  if (v.load === 'file') out.push(`Open the ${variant.skill} SKILL.md in this workspace and load it ${lead}.`);
+  else if (v.load === 'paste') out.push(`Load this file ${lead}:\n\n<paste the ${variant.skill} SKILL.md here>`);
+  else out.push(`Load the ${variant.skill} skill ${lead}. If it is not installed yet, it installs with:\n  ${variant.cmd}`);
+  out.push(REQUIRED_LINE);
+
+  if (v.mode === 'audit') {
+    out.push(`Target: ${slot(v.target, 'file path, route, or section to audit')}`);
+    out.push('Do not write or change any code in this response.');
+    out.push(FULL_AUDIT);
+    return out.join('\n\n');
+  }
+
+  const briefLines = skill.groups.flatMap(g => g.fields)
+    .filter(f => f.brief && f.modes.includes(v.mode))
+    .map(f => `  ${f.label}: ${slot(f.type === 'chips' ? v[f.id].join(', ') : v[f.id], f.label.toLowerCase())}`);
+  out.push((v.mode === 'full' ? 'Brief:\n' : 'Context brief:\n') + briefLines.join('\n'));
+
+  if (v.mode === 'iterate') {
+    out.push(`Section to redesign: ${slot(v.section, 'section name')}\n  What is wrong now: ${slot(v.problem, 'what is wrong')}\n  Must stay: ${slot(v.keep, 'what must not change')}`);
+    out.push('Before touching code, do a section-scoped design read for this section only, in the format the skill requires. Then redesign the section. Then run a section-scoped audit. Leave every other section alone.');
+  } else if (v.mode === 'add') {
+    out.push(`New section: ${slot(v.newSection, 'section name')}\n  What it must do: ${slot(v.newPurpose, 'purpose')}\n  Where it goes: ${slot(v.placement, 'placement')}`);
+    out.push('Before writing code, do a design read for the new section only, in the format the skill requires. Its layout family must differ from the sections directly before and after it.');
+  } else {
+    out.push('Before writing any code, do a design read in the format the skill requires.');
+  }
+  if (v.readFormat) out.push(DESIGN_READ_FORMAT);
+
+  out.push(`Deliverable: ${slot(v.deliverable, 'one route, one component, or one section')}`);
+  out.push(v.auditLevel === 'short'
+    ? 'Run the skill pre-flight check on your output and report the result before finishing.'
+    : FULL_AUDIT);
+  return out.join('\n\n');
+}
+
+/* ---------- Rendering ---------- */
+
+const $ = s => document.querySelector(s);
+let skill = TASTE;
+let mode = 'full';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function renderSkillPicker() {
+  $('#skill-picker').innerHTML = SKILLS.map(s => s.ready
+    ? `<button type="button" role="radio" aria-checked="${s === skill}" class="rounded-full px-5 py-2.5 text-sm font-medium bg-paper text-ink">${esc(s.name)}</button>`
+    : `<button type="button" role="radio" aria-checked="false" aria-disabled="true" disabled class="rounded-full px-5 py-2.5 text-sm border border-line text-muted/70 cursor-not-allowed">${esc(s.name)} <span class="ml-1 text-xs text-muted/50">soon</span></button>`
+  ).join('');
+}
+
+function renderModes() {
+  $('#mode-picker').innerHTML = skill.modes.map(m =>
+    `<label class="seg relative"><input type="radio" name="mode" value="${m.id}" ${m.id === mode ? 'checked' : ''}><span>${esc(m.label)}</span></label>`
+  ).join('');
+}
+
+function fieldHTML(f) {
+  const modes = f.modes === '*' ? '*' : f.modes.join(' ');
+  const hint = f.hint ? `<p class="mt-1.5 text-xs text-muted">${esc(f.hint)}</p>` : '';
+  const id = `f-${f.id}`;
+  let control = '';
+  if (f.type === 'text') control = `<input id="${id}" name="${f.id}" type="text" class="field-input" placeholder="${esc(f.placeholder || '')}">`;
+  if (f.type === 'textarea') control = `<textarea id="${id}" name="${f.id}" rows="${f.rows || 3}" class="field-input resize-y" placeholder="${esc(f.placeholder || '')}"></textarea>`;
+  if (f.type === 'select') control = `<select id="${id}" name="${f.id}" class="field-input">${skill[f.optionsFrom].map(o => `<option value="${o.id}" ${o.id === f.value ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select>`;
+  if (f.type === 'seg') control = `<div class="inline-flex flex-wrap rounded-full border border-line bg-surface p-1" role="radiogroup" aria-labelledby="${id}">${f.options.map(([val, lab]) =>
+      `<label class="seg relative"><input type="radio" name="${f.id}" value="${val}" ${val === f.value ? 'checked' : ''}><span>${esc(lab)}</span></label>`).join('')}</div>`;
+  if (f.type === 'chips') control = `<div class="flex flex-wrap gap-2">${f.options.map(o =>
+      `<label class="chip relative"><input type="checkbox" name="${f.id}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join('')}</div>
+      <textarea name="${f.id}Other" rows="2" class="field-input mt-3 resize-y" placeholder="${esc(f.placeholder)}" aria-label="Other things to avoid"></textarea>`;
+  if (f.type === 'check') return `<div data-modes="${modes}"><label class="flex items-center gap-3 text-sm cursor-pointer"><input name="${f.id}" type="checkbox" ${f.value ? 'checked' : ''} class="w-4 h-4 accent-[#d8a55c]">${esc(f.label)}</label></div>`;
+
+  const labelTag = (f.type === 'seg' || f.type === 'chips') ? `<p id="${id}" class="block text-sm font-medium mb-2">${esc(f.label)}</p>` : `<label for="${id}" class="block text-sm font-medium mb-2">${esc(f.label)}</label>`;
+  return `<div data-modes="${modes}">${labelTag}${control}${hint}</div>`;
+}
+
+function renderForm() {
+  $('#form').innerHTML = skill.groups.map(g =>
+    `<fieldset data-group class="space-y-5"><legend class="text-xs uppercase tracking-[.18em] text-accent/80 mb-5">${esc(g.title)}</legend>${g.fields.map(fieldHTML).join('')}</fieldset>`
+  ).join('');
+}
+
+function applyMode() {
+  document.querySelectorAll('#form [data-modes]').forEach(el => {
+    const m = el.dataset.modes;
+    el.hidden = !(m === '*' || m.split(' ').includes(mode));
+  });
+  document.querySelectorAll('#form [data-group]').forEach(g => {
+    g.hidden = ![...g.querySelectorAll('[data-modes]')].some(el => !el.hidden);
+  });
+  $('#mode-hint').textContent = skill.modes.find(m => m.id === mode).hint;
+}
+
+function readValues() {
+  const fd = new FormData($('#form'));
+  const v = { mode };
+  skill.groups.flatMap(g => g.fields).forEach(f => {
+    if (f.type === 'chips') {
+      const other = (fd.get(`${f.id}Other`) || '').trim();
+      v[f.id] = [...fd.getAll(f.id), ...(other ? [other] : [])];
+    } else if (f.type === 'check') v[f.id] = fd.has(f.id);
+    else v[f.id] = fd.get(f.id) || '';
+  });
+  return v;
+}
+
+function update() {
+  const text = skill.build(readValues(), skill);
+  $('#prompt').value = text;
+  const words = text.trim().split(/\s+/).length;
+  $('#count').textContent = `${words} words`;
+}
+
+renderSkillPicker();
+renderModes();
+renderForm();
+applyMode();
+update();
+
+$('#form').addEventListener('input', update);
+$('#mode-picker').addEventListener('change', e => { mode = e.target.value; applyMode(); update(); });
+
+$('#copy').addEventListener('click', async () => {
+  const btn = $('#copy span');
+  try { await navigator.clipboard.writeText($('#prompt').value); }
+  catch { $('#prompt').select(); document.execCommand('copy'); }
+  btn.textContent = 'Copied';
+  setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+});
+
+/* Self-check: every mode builds, keeps the required line, and contains no em or en dashes */
+TASTE.modes.forEach(m => {
+  const empty = { mode: m.id, load: 'npx', variant: 'v2', avoid: [], readFormat: true, auditLevel: 'full' };
+  const t = buildTaste(empty, TASTE);
+  console.assert(t.includes(REQUIRED_LINE), `missing required line in ${m.id}`);
+  console.assert(![0x2013, 0x2014].some(c => t.includes(String.fromCharCode(c))), `dash found in ${m.id}`);
+});
+
+</script>
+</body>
+</html>
