@@ -46,8 +46,8 @@
         { id: 'surface', label: 'Surface mode', type: 'seg', modes: ['build'], value: '',
           options: [['', 'Let it decide'], ['Persuade', 'Persuade'], ['Operate', 'Operate'], ['Read', 'Read'], ['Experience', 'Experience']],
           hint: 'Persuade: landing, pricing. Operate: app, dashboard, settings. Read: docs, articles. Experience: portfolio, gallery.' },
-        { id: 'mockup', label: 'Approach', type: 'seg', modes: ['build'], value: 'code',
-          options: [['code', 'Build directly'], ['mockup', 'Mockup first']], hint: 'Mockup first allows bolder directions but needs image generation in your agent.' }
+        { id: 'mockup', label: 'Approach', type: 'seg', modes: ['build'], value: 'code', disabledWhen: 'shapeFirst',
+          options: [['code', 'Build directly'], ['mockup', 'Mockup first']], hint: 'Mockup first allows bolder directions but needs image generation in your agent. Not used with Shape first, which writes no code.' }
       ]},
       { title: 'Brief (all optional)', fields: [
         { id: 'purpose', label: 'What it is for', type: 'textarea', rows: 2, modes: ['build'], placeholder: 'The problem this surface must solve.' },
@@ -77,7 +77,7 @@
         { id: 'keep', label: 'What to keep (optional)', type: 'textarea', rows: 2, modes: ['improve'], placeholder: 'Tier names, prices and the current color palette.' }
       ]},
       { title: 'Variants', fields: [
-        { id: 'count', label: 'How many', type: 'text', modes: ['variations'], value: '3', hint: 'Not used by live.' },
+        { id: 'count', label: 'How many', type: 'text', inputType: 'number', modes: ['variations'], value: '3', hint: 'Not used by live.' },
         { id: 'direction', label: 'Direction', type: 'text', modes: ['variations'], placeholder: 'bold' },
         { id: 'element', label: 'Element', type: 'text', modes: ['variations'], placeholder: 'the pricing cards' }
       ]}

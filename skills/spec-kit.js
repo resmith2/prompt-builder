@@ -20,7 +20,7 @@
       { title: 'Project', fields: [
         { id: 'existing', label: 'Project type', type: 'seg', modes: ['setup'], value: 'new',
           options: [['new', 'New project'], ['existing', 'Existing repository']] },
-        { id: 'project', label: 'Project name', type: 'text', modes: ['setup'], placeholder: 'taskify', hint: 'New projects only. Becomes the folder name.' },
+        { id: 'project', label: 'Project name', type: 'text', modes: ['setup'], placeholder: 'taskify', hint: 'New projects only. Becomes the folder name; characters other than letters, digits, dot, dash and underscore become dashes.' },
         { id: 'integration', label: 'Coding agent (--integration key)', type: 'text', modes: ['setup'], value: 'claude',
           list: ['claude', 'copilot', 'gemini', 'cursor-agent', 'codex', 'windsurf', 'opencode', 'qwen'], hint: 'Run specify init --help for the full list.' },
         { id: 'script', label: 'Script variant', type: 'seg', modes: ['setup'], value: '',
@@ -59,6 +59,7 @@
     selfCheck: (text, modeId, values) => {
       if (modeId !== 'setup') return console.assert(text.startsWith(`/speckit-${modeId}`), `wrong command for ${modeId}`);
       console.assert(buildSpecKit({ ...values, project: ' task  board ' }).includes('specify init task-board '), 'project name with spaces not hyphenated');
+      console.assert(buildSpecKit({ ...values, project: 'My App & "x"; rm' }).includes('specify init My-App-x-rm '), 'project name not shell-safe');
     }
   };
 
@@ -66,8 +67,8 @@
     switch (v.mode) {
       case 'setup': {
         const flags = joinParts(`--integration ${slot(v.integration, 'agent key')}`, v.script && `--script ${v.script}`, v.nonInteractive && '--non-interactive');
-        // Spaces would split the name into separate shell arguments
-        const name = slot(v.project.trim().replace(/\s+/g, '-'), 'project-name');
+        // Spaces and shell metacharacters (& ; " $ ...) would break or change the command; keep a safe folder name
+        const name = slot(v.project.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, ''), 'project-name');
         const lines = v.existing === 'existing'
           ? ['# From the repository root, after committing or stashing your work', 'uv tool install specify-cli', `specify init --here --force ${flags}`]
           : ['uv tool install specify-cli', `specify init ${name} ${flags}`, `cd ${name}`];

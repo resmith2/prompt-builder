@@ -38,7 +38,8 @@ function fieldHTML(f, s) {
   const hint = f.hint ? `<p class="mt-1.5 text-xs text-muted">${esc(f.hint)}</p>` : '';
   const id = `f-${s.id}-${f.id}`;
   let control = '';
-  if (f.type === 'text') control = `<input id="${id}" name="${f.id}" type="text" class="field-input" value="${esc(f.value || '')}" placeholder="${esc(f.placeholder || '')}"${f.list ? ` list="${id}-list"` : ''}>`
+  const numberAttrs = f.inputType === 'number' ? ' min="1" max="10" inputmode="numeric"' : '';
+  if (f.type === 'text') control = `<input id="${id}" name="${f.id}" type="${f.inputType || 'text'}"${numberAttrs} class="field-input" value="${esc(f.value || '')}" placeholder="${esc(f.placeholder || '')}"${f.list ? ` list="${id}-list"` : ''}>`
     + (f.list ? `<datalist id="${id}-list">${f.list.map(o => `<option value="${esc(o)}">`).join('')}</datalist>` : '');
   if (f.type === 'textarea') control = `<textarea id="${id}" name="${f.id}" rows="${f.rows || 3}" class="field-input resize-y" placeholder="${esc(f.placeholder || '')}"></textarea>`;
   if (f.type === 'select') control = `<select id="${id}" name="${f.id}" class="field-input">${s[f.optionsFrom].map(o => `<option value="${o.id}" ${o.id === f.value ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select>`;
@@ -50,7 +51,8 @@ function fieldHTML(f, s) {
   if (f.type === 'check') return `<div data-modes="${modes}"><label class="flex items-center gap-3 text-sm cursor-pointer"><input name="${f.id}" type="checkbox" ${f.value ? 'checked' : ''} class="w-4 h-4 accent-[#d8a55c]">${esc(f.label)}</label></div>`;
 
   const labelTag = (f.type === 'seg' || f.type === 'chips') ? `<p id="${id}" class="block text-sm font-medium mb-2">${esc(f.label)}</p>` : `<label for="${id}" class="block text-sm font-medium mb-2">${esc(f.label)}</label>`;
-  return `<div data-modes="${modes}">${labelTag}${control}${hint}</div>`;
+  const when = f.disabledWhen ? ` data-disabled-when="${f.disabledWhen}"` : '';
+  return `<div data-modes="${modes}"${when}>${labelTag}${control}${hint}</div>`;
 }
 
 // One form per skill, rendered once, so switching skill or step never loses input.
@@ -94,6 +96,12 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 let missing = [];
 
 function update() {
+  // A field with disabledWhen: '<checkbox id>' is switched off while that checkbox is ticked
+  formOf(skill).querySelectorAll('[data-disabled-when]').forEach(el => {
+    const off = formOf(skill).querySelector(`[name="${el.dataset.disabledWhen}"]`).checked;
+    el.querySelectorAll('input, select, textarea').forEach(i => { i.disabled = off; });
+    el.classList.toggle('opacity-50', off);
+  });
   emptySlots.length = 0;
   const text = skill.build(readValues(), skill);
   missing = [...new Set(emptySlots)];
