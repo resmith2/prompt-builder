@@ -1,6 +1,8 @@
 /* Rendering and events. Knows nothing about individual skills. Loaded last. */
 
 const $ = s => document.querySelector(s);
+// Ready skills first, then coming soon; each group A to Z. Script tag order no longer matters.
+SKILLS.sort((a, b) => (b.ready - a.ready) || a.name.localeCompare(b.name));
 let skill = SKILLS.find(s => s.ready);
 const modeOf = Object.fromEntries(SKILLS.filter(s => s.ready).map(s => [s.id, s.modes[0].id]));
 const formOf = s => $(`form[data-skill="${s.id}"]`);
@@ -13,8 +15,11 @@ function renderSkillPicker() {
   ).join('');
   const soon = SKILLS.filter(s => !s.ready).map(s => s.name);
   $('#skills-soon').textContent = soon.length ? `Coming soon: ${soon.join(', ')}` : '';
-  $('#skill-docs').innerHTML = SKILLS.filter(s => s.docs).map(s =>
-    `<a href="${esc(s.docs)}" target="_blank" rel="noopener" class="hover:text-paper">${esc(s.name)} docs</a>`).join('');
+}
+
+function renderDocs() {
+  $('#skill-docs').innerHTML = skill.docs
+    ? `<a href="${esc(skill.docs)}" target="_blank" rel="noopener" class="hover:text-paper">${esc(skill.name)} docs</a>` : '';
 }
 
 function renderModes() {
@@ -119,6 +124,7 @@ function update() {
 }
 
 renderSkillPicker();
+renderDocs();
 renderModes();
 renderForms();
 applyMode();
@@ -128,7 +134,7 @@ $('#forms').addEventListener('input', update);
 $('#mode-picker').addEventListener('change', e => { modeOf[skill.id] = e.target.value; applyMode(); update(); showSelectedMode(); });
 $('#skill-picker').addEventListener('change', e => {
   skill = SKILLS.find(s => s.id === e.target.value);
-  renderModes(); applyMode(); update();
+  renderModes(); renderDocs(); applyMode(); update();
 });
 
 document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
