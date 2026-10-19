@@ -6,11 +6,13 @@ const modeOf = Object.fromEntries(SKILLS.filter(s => s.ready).map(s => [s.id, s.
 const formOf = s => $(`form[data-skill="${s.id}"]`);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+// Native radios: arrow keys, one Tab stop and correct announcements come for free. Rendered once.
 function renderSkillPicker() {
-  $('#skill-picker').innerHTML = SKILLS.map(s => s.ready
-    ? `<button type="button" role="radio" data-skill="${s.id}" aria-checked="${s === skill}" class="rounded-full px-5 py-2.5 text-sm font-medium transition-colors ${s === skill ? 'bg-paper text-ink' : 'border border-line text-paper hover:border-muted'}">${esc(s.name)}</button>`
-    : `<button type="button" role="radio" aria-checked="false" aria-disabled="true" disabled class="rounded-full px-5 py-2.5 text-sm border border-line text-muted/70 cursor-not-allowed">${esc(s.name)} <span class="ml-1 text-xs text-muted/50">soon</span></button>`
+  $('#skill-picker').innerHTML = SKILLS.filter(s => s.ready).map(s =>
+    `<label class="pill relative"><input type="radio" name="skill" value="${s.id}" ${s === skill ? 'checked' : ''}><span>${esc(s.name)}</span></label>`
   ).join('');
+  const soon = SKILLS.filter(s => !s.ready).map(s => s.name);
+  $('#skills-soon').textContent = soon.length ? `Coming soon: ${soon.join(', ')}` : '';
 }
 
 function renderModes() {
@@ -91,18 +93,20 @@ update();
 
 $('#forms').addEventListener('input', update);
 $('#mode-picker').addEventListener('change', e => { modeOf[skill.id] = e.target.value; applyMode(); update(); });
-$('#skill-picker').addEventListener('click', e => {
-  const next = SKILLS.find(s => s.ready && s.id === e.target.closest('[data-skill]')?.dataset.skill);
-  if (!next || next === skill) return;
-  skill = next;
-  renderSkillPicker(); renderModes(); applyMode(); update();
+$('#skill-picker').addEventListener('change', e => {
+  skill = SKILLS.find(s => s.id === e.target.value);
+  renderModes(); applyMode(); update();
 });
 
 $('#copy').addEventListener('click', async () => {
   const btn = $('#copy span');
+  let ok = true;
   try { await navigator.clipboard.writeText($('#prompt').value); }
-  catch { $('#prompt').select(); document.execCommand('copy'); }
-  btn.textContent = 'Copied';
+  catch { $('#prompt').select(); ok = document.execCommand('copy'); }
+  // Re-set to empty first so repeated copies are announced again
+  $('#copy-status').textContent = '';
+  $('#copy-status').textContent = ok ? 'Prompt copied to clipboard.' : 'Copy failed. The prompt is selected; press Ctrl+C to copy it.';
+  btn.textContent = ok ? 'Copied' : 'Copy failed';
   setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
 });
 

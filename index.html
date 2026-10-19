@@ -33,7 +33,10 @@
       <h1 class="text-[clamp(1.75rem,3vw,2.5rem)] font-semibold tracking-[-0.03em] leading-[1.05]">Skill prompt builder</h1>
 
       <!-- Skill picker -->
-      <div class="mt-10 flex flex-wrap gap-2" role="radiogroup" aria-label="Skill" id="skill-picker"></div>
+      <div class="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Skill" id="skill-picker"></div>
+        <p id="skills-soon" class="text-sm text-muted"></p>
+      </div>
 
       <!-- Mode -->
       <div class="mt-8">
@@ -53,13 +56,14 @@
                 <label for="prompt" class="text-sm font-medium">Your prompt</label>
                 <div class="flex items-center gap-3">
                   <span id="count" class="text-xs text-muted font-mono"></span>
-                  <button id="copy" type="button" class="rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5">
-                    <i class="ph ph-copy"></i><span>Copy</span>
+                  <button id="copy" type="button" class="rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                    <i class="ph ph-copy" aria-hidden="true"></i><span>Copy</span>
                   </button>
                 </div>
               </div>
-              <textarea id="prompt" readonly spellcheck="false" class="block w-full h-[60vh] lg:h-[calc(100vh-12rem)] resize-none bg-transparent p-5 font-mono text-[13px] leading-relaxed text-paper/90 focus:outline-none"></textarea>
+              <textarea id="prompt" readonly spellcheck="false" class="block w-full h-[60vh] lg:h-[calc(100vh-12rem)] resize-none bg-transparent p-5 font-mono text-[13px] leading-relaxed text-paper/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent rounded-b-2xl"></textarea>
             </div>
+            <p id="copy-status" class="sr-only" role="status" aria-live="polite"></p>
             <p class="mt-3 text-xs text-muted">Anything in angle brackets is a slot you have not filled yet.</p>
           </div>
         </div>
