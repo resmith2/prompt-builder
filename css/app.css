@@ -21,6 +21,17 @@ body { background: #0f0f0d; color: #ece7dc; font-family: Geist, system-ui, sans-
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg span { display: block; padding: .55rem 1rem; border-radius: 999px; font-size: .88rem; color: #948e80; cursor: pointer; transition: all .25s; white-space: nowrap; }
 .seg input:checked + span { background: #ece7dc; color: #0f0f0d; }
+/* Segmented rows wrap on wide screens; on phones they stay one row and scroll sideways, so pills never split mid-shape */
+.seg-row { display: inline-flex; flex-wrap: wrap; max-width: 100%; }
+@media (max-width: 639px) {
+  .seg-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .seg-row::-webkit-scrollbar { display: none; }
+}
+/* 44px touch targets on touch screens */
+@media (pointer: coarse) {
+  .seg span { padding-block: .8rem; }
+  .chip span { padding-block: .7rem; }
+}
 ::selection { background: rgba(216, 165, 92, .35); color: #ece7dc; }
 #prompt::-webkit-scrollbar { width: 8px; }
 #prompt::-webkit-scrollbar-thumb { background: #2c2b26; border-radius: 8px; }

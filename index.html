@@ -40,7 +40,7 @@
 
       <!-- Mode -->
       <div class="mt-8">
-        <div class="inline-flex flex-wrap rounded-3xl border border-line bg-surface p-1" role="radiogroup" aria-label="What are you working on" id="mode-picker"></div>
+        <div class="seg-row rounded-full sm:rounded-3xl border border-line bg-surface p-1" role="radiogroup" aria-label="What are you working on" id="mode-picker"></div>
       </div>
       <p id="mode-hint" class="mt-3 text-sm text-muted"></p>
 
@@ -51,12 +51,12 @@
 
         <div class="lg:col-span-5">
           <div class="lg:sticky lg:top-24">
-            <div class="rounded-2xl border border-line bg-surface overflow-hidden">
+            <div id="output" class="scroll-mt-6 rounded-2xl border border-line bg-surface overflow-hidden">
               <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line">
                 <label for="prompt" id="output-label" class="text-sm font-medium">Prompt for your agent</label>
                 <div class="flex items-center gap-3">
                   <span id="count" class="text-xs text-muted font-mono whitespace-nowrap"></span>
-                  <button id="copy" type="button" class="whitespace-nowrap rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                  <button id="copy" data-copy type="button" class="whitespace-nowrap rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                     <i class="ph ph-copy" aria-hidden="true"></i><span>Copy</span>
                   </button>
                 </div>
@@ -71,7 +71,8 @@
     </div>
   </section>
 
-  <footer class="px-4 sm:px-6 pb-12">
+  <!-- Extra bottom space below lg so the fixed copy bar never covers the footer -->
+  <footer class="px-4 sm:px-6 pb-28 lg:pb-12">
     <div class="max-w-7xl mx-auto">
       <div class="pt-8 border-t border-line flex flex-col sm:flex-row justify-between gap-4 text-sm text-muted">
         <span>Skill prompt builder. Prompt shapes for agent skills.</span>
@@ -80,6 +81,16 @@
     </div>
   </footer>
 </main>
+
+<!-- Below lg the output sits under a long form; keep Copy within thumb reach -->
+<div class="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 backdrop-blur px-4 py-3 pb-[max(.75rem,env(safe-area-inset-bottom))]">
+  <div class="max-w-7xl mx-auto flex items-center gap-3">
+    <a href="#output" id="bar-summary" class="min-w-0 flex-1 truncate text-sm text-muted underline decoration-line underline-offset-4 hover:text-paper"></a>
+    <button data-copy type="button" class="shrink-0 h-11 rounded-full bg-paper text-ink text-sm font-medium px-5 inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+      <i class="ph ph-copy" aria-hidden="true"></i><span>Copy</span>
+    </button>
+  </div>
+</div>
 
 <script src="js/core.js"></script>
 <script src="skills/taste.js"></script>

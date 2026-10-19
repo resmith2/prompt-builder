@@ -5,7 +5,7 @@
     docs: 'https://github.github.com/spec-kit/quickstart.html',
     outputLabel: 'Command for your agent chat',
     modes: [
-      { id: 'setup', label: 'Setup', outputLabel: 'Terminal commands', hint: 'Runs in your terminal, not agent chat. Installs the specify CLI (needs uv) and initializes the project.' },
+      { id: 'setup', label: 'Setup', outputLabel: 'Terminal commands', wrap: 'off', hint: 'Runs in your terminal, not agent chat. Installs the specify CLI (needs uv) and initializes the project.' },
       { id: 'constitution', label: 'Constitution', hint: 'Once per project. The ground rules every later step is checked against.' },
       { id: 'specify', label: 'Specify', hint: 'What to build and why. Leave the tech stack for the plan.' },
       { id: 'clarify', label: 'Clarify', hint: 'Quality gate. Asks targeted questions about gaps and folds the answers into the spec. Run it before planning.' },

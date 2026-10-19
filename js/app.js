@@ -21,6 +21,16 @@ function renderModes() {
   $('#mode-picker').innerHTML = skill.modes.map(m =>
     `<label class="seg relative"><input type="radio" name="mode" value="${m.id}" ${m.id === modeOf[skill.id] ? 'checked' : ''}><span>${esc(m.label)}</span></label>`
   ).join('');
+  showSelectedMode();
+}
+
+// On narrow screens the step row scrolls sideways; keep the selected step visible.
+function showSelectedMode() {
+  const row = $('#mode-picker');
+  const pill = row.querySelector('input:checked')?.parentElement;
+  if (!pill) return;
+  const r = row.getBoundingClientRect(), p = pill.getBoundingClientRect();
+  row.scrollLeft += (p.left - r.left) - (r.width - p.width) / 2;
 }
 
 function fieldHTML(f, s) {
@@ -32,7 +42,7 @@ function fieldHTML(f, s) {
     + (f.list ? `<datalist id="${id}-list">${f.list.map(o => `<option value="${esc(o)}">`).join('')}</datalist>` : '');
   if (f.type === 'textarea') control = `<textarea id="${id}" name="${f.id}" rows="${f.rows || 3}" class="field-input resize-y" placeholder="${esc(f.placeholder || '')}"></textarea>`;
   if (f.type === 'select') control = `<select id="${id}" name="${f.id}" class="field-input">${s[f.optionsFrom].map(o => `<option value="${o.id}" ${o.id === f.value ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select>`;
-  if (f.type === 'seg') control = `<div class="inline-flex flex-wrap rounded-full border border-line bg-surface p-1" role="radiogroup" aria-labelledby="${id}">${f.options.map(([val, lab]) =>
+  if (f.type === 'seg') control = `<div class="seg-row rounded-full border border-line bg-surface p-1" role="radiogroup" aria-labelledby="${id}">${f.options.map(([val, lab]) =>
       `<label class="seg relative"><input type="radio" name="${f.id}" value="${val}" ${val === f.value ? 'checked' : ''}><span>${esc(lab)}</span></label>`).join('')}</div>`;
   if (f.type === 'chips') control = `<div class="flex flex-wrap gap-2">${f.options.map(o =>
       `<label class="chip relative"><input type="checkbox" name="${f.id}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join('')}</div>
@@ -89,7 +99,10 @@ function update() {
   missing = [...new Set(emptySlots)];
   const mode = skill.modes.find(m => m.id === modeOf[skill.id]);
   $('#prompt').value = text;
+  // Soft-wrapped shell commands read as two lines; terminal steps scroll sideways instead
+  $('#prompt').setAttribute('wrap', mode.wrap || 'soft');
   $('#output-label').textContent = mode.outputLabel || skill.outputLabel || 'Prompt for your agent';
+  $('#bar-summary').textContent = missing.length ? `${plural(missing.length, 'slot')} still empty. View output` : 'View output';
   $('#count').textContent = plural(text.trim().split(/\s+/).length, 'word');
   // Semicolons: some slot labels contain commas
   $('#slot-status').textContent = missing.length
@@ -104,14 +117,14 @@ applyMode();
 update();
 
 $('#forms').addEventListener('input', update);
-$('#mode-picker').addEventListener('change', e => { modeOf[skill.id] = e.target.value; applyMode(); update(); });
+$('#mode-picker').addEventListener('change', e => { modeOf[skill.id] = e.target.value; applyMode(); update(); showSelectedMode(); });
 $('#skill-picker').addEventListener('change', e => {
   skill = SKILLS.find(s => s.id === e.target.value);
   renderModes(); applyMode(); update();
 });
 
-$('#copy').addEventListener('click', async () => {
-  const btn = $('#copy span');
+document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+  const btn = b.querySelector('span');
   let ok = true;
   try { await navigator.clipboard.writeText($('#prompt').value); }
   catch { $('#prompt').select(); ok = document.execCommand('copy'); }
@@ -121,7 +134,7 @@ $('#copy').addEventListener('click', async () => {
     : missing.length ? `Copied, with ${plural(missing.length, 'empty slot')} to fill after pasting.` : 'Copied. Nothing left to fill.';
   btn.textContent = ok ? 'Copied' : 'Copy failed';
   setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
-});
+}));
 
 /* Self-check: every step of every skill builds from its default form, with no em or en dashes.
    A skill can add its own checks with selfCheck(text, modeId, values). */
