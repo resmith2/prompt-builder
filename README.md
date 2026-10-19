@@ -33,6 +33,23 @@ Options include how the skill gets loaded (workspace file, `npx skills add`, or 
 
 Spec-Kit runs as separate `/speckit-*` commands, each reviewed before the next, so the builder outputs one command per step. The steps follow the quickstart's full path: **Setup** (terminal commands to install the `specify` CLI and run `specify init`, for a new project or an existing repository), then **Constitution**, **Specify**, **Clarify**, **Plan**, **Checklist**, **Tasks**, **Analyze**, **Implement** and **Converge**. Clarify, Checklist and Analyze are quality gates you can skip for small features. Inputs are kept as you move between steps.
 
+## Layout
+
+```
+index.html              markup and the script tags, in load order
+css/app.css             styles
+js/core.js              the SKILLS list, registerSkill() and text helpers shared by skills
+skills/<name>.js        one file per skill; each calls registerSkill()
+skills/coming-soon.js   skills shown as "soon"
+js/app.js               rendering, events and the self-check; never names a skill
+```
+
+The files are plain scripts, not ES modules, so the page still works when opened straight from disk.
+
 ## Adding a skill
 
-Each skill is one object in the `<script>` block of `index.html`. Look at `TASTE` or `SPEC_KIT` for the shape: `modes`, `groups` of form fields, and a `build` function that turns the form values into the prompt text. Add the object to `SKILLS` with `ready: true`.
+1. Copy `skills/spec-kit.js` to `skills/<name>.js`. A skill is one object: `id`, `name`, `ready: true`, `modes`, `groups` of form fields, and a `build(values)` function that turns the form values into the prompt text. It can also have a `selfCheck(text, modeId, values)` function with its own `console.assert` checks.
+2. Add `<script src="skills/<name>.js"></script>` to `index.html`, before `js/app.js`.
+3. If the skill was listed in `skills/coming-soon.js`, delete that line.
+
+When the page loads, it builds every step of every skill and logs a failed `console.assert` if any output is empty or has em or en dashes.
