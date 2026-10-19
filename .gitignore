@@ -1,0 +1,21 @@
+# Impeccable: critique snapshots, detector cache, live-mode state
+.impeccable/
+
+# Agent and editor settings
+.claude/
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tooling leftovers (the page has no build, but npx tools may write these)
+node_modules/
+*.log
+
+# Local secrets
+.env
+.env.*
