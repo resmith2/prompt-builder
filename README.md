@@ -16,7 +16,7 @@ Open `index.html` in a browser. There is no build step or install. Tailwind is l
 | Skill | Status |
 |-------|--------|
 | [Taste](https://github.com/Leonxlnx/taste-skill) | Ready |
-| Spec-Kit | Coming soon |
+| [Spec-Kit](https://github.github.com/spec-kit/quickstart.html) | Ready |
 | Impeccable | Coming soon |
 | Brandkit | Coming soon |
 
@@ -29,6 +29,10 @@ Open `index.html` in a browser. There is no build step or install. Tailwind is l
 
 Options include how the skill gets loaded (workspace file, `npx skills add`, or pasting SKILL.md), which skill version to use (v2, legacy v1, or the full repo), whether the prompt spells out the design-read format, and whether it closes with the pre-flight line or the full six-gate audit.
 
+### Spec-Kit steps
+
+Spec-Kit runs as separate `/speckit-*` commands, each reviewed before the next, so the builder outputs one command per step. The steps follow the quickstart's full path: **Setup** (terminal commands to install the `specify` CLI and run `specify init`, for a new project or an existing repository), then **Constitution**, **Specify**, **Clarify**, **Plan**, **Checklist**, **Tasks**, **Analyze**, **Implement** and **Converge**. Clarify, Checklist and Analyze are quality gates you can skip for small features. Inputs are kept as you move between steps.
+
 ## Adding a skill
 
-Each skill is one object in the `<script>` block of `index.html`. Look at `TASTE` for the shape: `modes`, `groups` of form fields, and a `build` function that turns the form values into the prompt text. Add the object to `SKILLS` with `ready: true`.
+Each skill is one object in the `<script>` block of `index.html`. Look at `TASTE` or `SPEC_KIT` for the shape: `modes`, `groups` of form fields, and a `build` function that turns the form values into the prompt text. Add the object to `SKILLS` with `ready: true`.

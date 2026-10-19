@@ -63,13 +63,15 @@
       <div class="mt-10 flex flex-wrap gap-2" role="radiogroup" aria-label="Skill" id="skill-picker"></div>
 
       <!-- Mode -->
-      <div class="mt-8 overflow-x-auto -mx-4 px-4">
-        <div class="inline-flex rounded-full border border-line bg-surface p-1" role="radiogroup" aria-label="What are you working on" id="mode-picker"></div>
+      <div class="mt-8">
+        <div class="inline-flex flex-wrap rounded-3xl border border-line bg-surface p-1" role="radiogroup" aria-label="What are you working on" id="mode-picker"></div>
       </div>
       <p id="mode-hint" class="mt-3 text-sm text-muted"></p>
 
       <div class="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <form id="form" class="lg:col-span-7 space-y-10" autocomplete="off" onsubmit="return false"></form>
+        <div id="forms" class="lg:col-span-7">
+          <p id="no-input" class="text-sm text-muted" hidden>This step takes no input. Copy the command and run it in your agent's chat.</p>
+        </div>
 
         <div class="lg:col-span-5">
           <div class="lg:sticky lg:top-24">
@@ -185,9 +187,66 @@ const TASTE = {
   build: buildTaste
 };
 
+const SPEC_KIT = {
+  id: 'spec-kit', name: 'Spec-Kit', ready: true,
+  // Steps follow https://github.github.com/spec-kit/quickstart.html (full path)
+  modes: [
+    { id: 'setup', label: 'Setup', hint: 'Runs in your terminal, not agent chat. Installs the specify CLI (needs uv) and initializes the project.' },
+    { id: 'constitution', label: 'Constitution', hint: 'Once per project. The ground rules every later step is checked against.' },
+    { id: 'specify', label: 'Specify', hint: 'What to build and why. Leave the tech stack for the plan.' },
+    { id: 'clarify', label: 'Clarify', hint: 'Quality gate. Asks targeted questions about gaps and folds the answers into the spec. Run it before planning.' },
+    { id: 'plan', label: 'Plan', hint: 'The tech stack and architecture go here, not in the spec.' },
+    { id: 'checklist', label: 'Checklist', hint: 'Quality gate. Generates a requirements-quality checklist. Tick items only once a reviewer agrees they hold.' },
+    { id: 'tasks', label: 'Tasks', hint: 'Breaks the design into a dependency-ordered tasks.md.' },
+    { id: 'analyze', label: 'Analyze', hint: 'Quality gate. Read-only check across spec, plan and tasks. Fix issues at the source and re-run.' },
+    { id: 'implement', label: 'Implement', hint: 'Runs tasks.md in dependency order. Scope it to one phase for large features.' },
+    { id: 'converge', label: 'Converge', hint: 'Checks the code against spec, plan and tasks. Repeat implement and converge until it reports Converged.' }
+  ],
+  groups: [
+    { title: 'Project', fields: [
+      { id: 'existing', label: 'Project type', type: 'seg', modes: ['setup'], value: 'new',
+        options: [['new', 'New project'], ['existing', 'Existing repository']] },
+      { id: 'project', label: 'Project name', type: 'text', modes: ['setup'], placeholder: 'taskify', hint: 'New projects only. Becomes the folder name.' },
+      { id: 'integration', label: 'Coding agent (--integration key)', type: 'text', modes: ['setup'], value: 'claude',
+        list: ['claude', 'copilot', 'gemini', 'cursor-agent', 'codex', 'windsurf', 'opencode', 'qwen'], hint: 'Run specify init --help for the full list.' },
+      { id: 'script', label: 'Script variant', type: 'seg', modes: ['setup'], value: '',
+        options: [['', 'OS default'], ['sh', 'Bash'], ['ps', 'PowerShell'], ['py', 'Python']] },
+      { id: 'nonInteractive', label: 'Non-interactive (CI or agent harness)', type: 'check', modes: ['setup'] },
+      { id: 'gitExt', label: 'Add the git extension (numbered feature branches)', type: 'check', modes: ['setup'] }
+    ]},
+    { title: 'Ground rules', fields: [
+      { id: 'principles', label: 'Core principles', type: 'textarea', rows: 2, modes: ['constitution'], placeholder: 'Security-first. All user inputs must be validated.' },
+      { id: 'architecture', label: 'Architecture rules', type: 'textarea', rows: 2, modes: ['constitution'], placeholder: 'Microservices architecture. Follow the existing service boundaries.' },
+      { id: 'testing', label: 'Testing rules', type: 'textarea', rows: 2, modes: ['constitution'], placeholder: 'Run the established unit and integration test suites.' },
+      { id: 'standards', label: 'Code standards', type: 'textarea', rows: 2, modes: ['constitution'], placeholder: 'Code must be fully documented.' }
+    ]},
+    { title: 'The feature', fields: [
+      { id: 'what', label: 'What you are building and why', type: 'textarea', modes: ['specify'], placeholder: 'Taskify, a team productivity platform where users create projects, assign tasks, comment, and move tasks across Kanban columns.' },
+      { id: 'users', label: 'Who uses it', type: 'textarea', rows: 2, modes: ['specify'], placeholder: 'One product manager and four engineers, predefined.' },
+      { id: 'behaviors', label: 'Key behaviors', type: 'textarea', rows: 2, modes: ['specify'], placeholder: 'Drag tasks between To Do, In Progress, In Review and Done. Comment on any task.' },
+      { id: 'data', label: 'Sample data or scale', type: 'textarea', rows: 2, modes: ['specify'], placeholder: 'Three sample projects.' },
+      { id: 'boundaries', label: 'Must not change', type: 'textarea', rows: 2, modes: ['specify'], placeholder: 'Existing code only: behavior, APIs or permissions that must stay intact.' },
+      { id: 'notNow', label: 'Not in this phase', type: 'textarea', rows: 2, modes: ['specify'], placeholder: 'Login, notifications.' }
+    ]},
+    { title: 'Focus', fields: [
+      { id: 'focus', label: 'Focus area (optional)', type: 'textarea', rows: 2, modes: ['clarify'], placeholder: 'Focus on task card behavior: status changes, comment permissions, and user assignment.' }
+    ]},
+    { title: 'Tech stack', fields: [
+      { id: 'stack', label: 'Backend and data', type: 'textarea', rows: 2, modes: ['plan'], placeholder: '.NET Aspire with Postgres' },
+      { id: 'frontend', label: 'Frontend', type: 'textarea', rows: 2, modes: ['plan'], placeholder: 'Blazor Server with drag-and-drop boards and real-time updates' },
+      { id: 'apis', label: 'APIs and integrations', type: 'textarea', rows: 2, modes: ['plan'], placeholder: 'REST APIs for projects, tasks and notifications' },
+      { id: 'constraints', label: 'Constraints', type: 'textarea', rows: 2, modes: ['plan'], placeholder: 'Reuse the existing architecture, dependencies and test conventions.' }
+    ]},
+    { title: 'Scope', fields: [
+      { id: 'phase', label: 'Phase to implement (optional)', type: 'text', modes: ['implement'], placeholder: 'Phase 1 only', hint: 'Leave blank to build everything.' }
+    ]}
+  ],
+  build: buildSpecKit
+};
+
 const SKILLS = [
   TASTE,
-  { id: 'spec-kit', name: 'Spec-Kit', ready: false },
+  SPEC_KIT,
   { id: 'impeccable', name: 'Impeccable', ready: false },
   { id: 'brandkit', name: 'Brandkit', ready: false }
 ];
@@ -234,34 +293,67 @@ function buildTaste(v, skill) {
   return out.join('\n\n');
 }
 
+const sentence = s => { s = (s || '').trim(); return !s || /[.!?]$/.test(s) ? s : `${s}.`; };
+const labeled = (name, s) => (s || '').trim() ? `${name}: ${sentence(s)}` : '';
+const joinParts = (...parts) => parts.filter(Boolean).join(' ');
+
+function buildSpecKit(v) {
+  switch (v.mode) {
+    case 'setup': {
+      const flags = joinParts(`--integration ${slot(v.integration, 'agent key')}`, v.script && `--script ${v.script}`, v.nonInteractive && '--non-interactive');
+      const lines = v.existing === 'existing'
+        ? ['# From the repository root, after committing or stashing your work', 'uv tool install specify-cli', `specify init --here --force ${flags}`]
+        : ['uv tool install specify-cli', `specify init ${slot(v.project, 'project-name')} ${flags}`, `cd ${slot(v.project, 'project-name')}`];
+      if (v.gitExt) lines.push('specify extension add git');
+      return lines.join('\n');
+    }
+    case 'constitution':
+      return `/speckit-constitution ${joinParts(sentence(v.principles) || '<core principles>', sentence(v.architecture), sentence(v.testing), sentence(v.standards))}`;
+    case 'specify':
+      return `/speckit-specify ${joinParts(sentence(v.what) || '<what you are building and why>', labeled('Users', v.users), labeled('Key behaviors', v.behaviors),
+        labeled('Sample data', v.data), labeled('Must not change', v.boundaries), labeled('Not in this phase', v.notNow))}`;
+    case 'clarify':
+      return joinParts('/speckit-clarify', sentence(v.focus));
+    case 'plan':
+      return `/speckit-plan ${joinParts(labeled('Backend and data', v.stack) || 'Backend and data: <stack>', labeled('Frontend', v.frontend),
+        labeled('APIs and integrations', v.apis), labeled('Constraints', v.constraints))}`;
+    case 'implement':
+      return joinParts('/speckit-implement', sentence(v.phase));
+    default:
+      return `/speckit-${v.mode}`;
+  }
+}
+
 /* ---------- Rendering ---------- */
 
 const $ = s => document.querySelector(s);
 let skill = TASTE;
-let mode = 'full';
+const modeOf = Object.fromEntries(SKILLS.filter(s => s.ready).map(s => [s.id, s.modes[0].id]));
+const formOf = s => $(`form[data-skill="${s.id}"]`);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 function renderSkillPicker() {
   $('#skill-picker').innerHTML = SKILLS.map(s => s.ready
-    ? `<button type="button" role="radio" aria-checked="${s === skill}" class="rounded-full px-5 py-2.5 text-sm font-medium bg-paper text-ink">${esc(s.name)}</button>`
+    ? `<button type="button" role="radio" data-skill="${s.id}" aria-checked="${s === skill}" class="rounded-full px-5 py-2.5 text-sm font-medium transition-colors ${s === skill ? 'bg-paper text-ink' : 'border border-line text-paper hover:border-muted'}">${esc(s.name)}</button>`
     : `<button type="button" role="radio" aria-checked="false" aria-disabled="true" disabled class="rounded-full px-5 py-2.5 text-sm border border-line text-muted/70 cursor-not-allowed">${esc(s.name)} <span class="ml-1 text-xs text-muted/50">soon</span></button>`
   ).join('');
 }
 
 function renderModes() {
   $('#mode-picker').innerHTML = skill.modes.map(m =>
-    `<label class="seg relative"><input type="radio" name="mode" value="${m.id}" ${m.id === mode ? 'checked' : ''}><span>${esc(m.label)}</span></label>`
+    `<label class="seg relative"><input type="radio" name="mode" value="${m.id}" ${m.id === modeOf[skill.id] ? 'checked' : ''}><span>${esc(m.label)}</span></label>`
   ).join('');
 }
 
-function fieldHTML(f) {
+function fieldHTML(f, s) {
   const modes = f.modes === '*' ? '*' : f.modes.join(' ');
   const hint = f.hint ? `<p class="mt-1.5 text-xs text-muted">${esc(f.hint)}</p>` : '';
-  const id = `f-${f.id}`;
+  const id = `f-${s.id}-${f.id}`;
   let control = '';
-  if (f.type === 'text') control = `<input id="${id}" name="${f.id}" type="text" class="field-input" placeholder="${esc(f.placeholder || '')}">`;
+  if (f.type === 'text') control = `<input id="${id}" name="${f.id}" type="text" class="field-input" value="${esc(f.value || '')}" placeholder="${esc(f.placeholder || '')}"${f.list ? ` list="${id}-list"` : ''}>`
+    + (f.list ? `<datalist id="${id}-list">${f.list.map(o => `<option value="${esc(o)}">`).join('')}</datalist>` : '');
   if (f.type === 'textarea') control = `<textarea id="${id}" name="${f.id}" rows="${f.rows || 3}" class="field-input resize-y" placeholder="${esc(f.placeholder || '')}"></textarea>`;
-  if (f.type === 'select') control = `<select id="${id}" name="${f.id}" class="field-input">${skill[f.optionsFrom].map(o => `<option value="${o.id}" ${o.id === f.value ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select>`;
+  if (f.type === 'select') control = `<select id="${id}" name="${f.id}" class="field-input">${s[f.optionsFrom].map(o => `<option value="${o.id}" ${o.id === f.value ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select>`;
   if (f.type === 'seg') control = `<div class="inline-flex flex-wrap rounded-full border border-line bg-surface p-1" role="radiogroup" aria-labelledby="${id}">${f.options.map(([val, lab]) =>
       `<label class="seg relative"><input type="radio" name="${f.id}" value="${val}" ${val === f.value ? 'checked' : ''}><span>${esc(lab)}</span></label>`).join('')}</div>`;
   if (f.type === 'chips') control = `<div class="flex flex-wrap gap-2">${f.options.map(o =>
@@ -273,27 +365,34 @@ function fieldHTML(f) {
   return `<div data-modes="${modes}">${labelTag}${control}${hint}</div>`;
 }
 
-function renderForm() {
-  $('#form').innerHTML = skill.groups.map(g =>
-    `<fieldset data-group class="space-y-5"><legend class="text-xs uppercase tracking-[.18em] text-accent/80 mb-5">${esc(g.title)}</legend>${g.fields.map(fieldHTML).join('')}</fieldset>`
-  ).join('');
+// One form per skill, rendered once, so switching skill or step never loses input.
+function renderForms() {
+  $('#forms').insertAdjacentHTML('beforeend', SKILLS.filter(s => s.ready).map(s =>
+    `<form data-skill="${s.id}" class="space-y-10" autocomplete="off" onsubmit="return false">${s.groups.map(g =>
+      `<fieldset data-group class="space-y-5"><legend class="text-xs uppercase tracking-[.18em] text-accent/80 mb-5">${esc(g.title)}</legend>${g.fields.map(f => fieldHTML(f, s)).join('')}</fieldset>`
+    ).join('')}</form>`
+  ).join(''));
 }
 
 function applyMode() {
-  document.querySelectorAll('#form [data-modes]').forEach(el => {
+  const mode = modeOf[skill.id];
+  document.querySelectorAll('#forms form').forEach(f => { f.hidden = f !== formOf(skill); });
+  formOf(skill).querySelectorAll('[data-modes]').forEach(el => {
     const m = el.dataset.modes;
     el.hidden = !(m === '*' || m.split(' ').includes(mode));
   });
-  document.querySelectorAll('#form [data-group]').forEach(g => {
+  const groups = [...formOf(skill).querySelectorAll('[data-group]')];
+  groups.forEach(g => {
     g.hidden = ![...g.querySelectorAll('[data-modes]')].some(el => !el.hidden);
   });
+  $('#no-input').hidden = groups.some(g => !g.hidden);
   $('#mode-hint').textContent = skill.modes.find(m => m.id === mode).hint;
 }
 
-function readValues() {
-  const fd = new FormData($('#form'));
+function readValues(s = skill, mode = modeOf[s.id]) {
+  const fd = new FormData(formOf(s));
   const v = { mode };
-  skill.groups.flatMap(g => g.fields).forEach(f => {
+  s.groups.flatMap(g => g.fields).forEach(f => {
     if (f.type === 'chips') {
       const other = (fd.get(`${f.id}Other`) || '').trim();
       v[f.id] = [...fd.getAll(f.id), ...(other ? [other] : [])];
@@ -312,12 +411,18 @@ function update() {
 
 renderSkillPicker();
 renderModes();
-renderForm();
+renderForms();
 applyMode();
 update();
 
-$('#form').addEventListener('input', update);
-$('#mode-picker').addEventListener('change', e => { mode = e.target.value; applyMode(); update(); });
+$('#forms').addEventListener('input', update);
+$('#mode-picker').addEventListener('change', e => { modeOf[skill.id] = e.target.value; applyMode(); update(); });
+$('#skill-picker').addEventListener('click', e => {
+  const next = SKILLS.find(s => s.ready && s.id === e.target.closest('[data-skill]')?.dataset.skill);
+  if (!next || next === skill) return;
+  skill = next;
+  renderSkillPicker(); renderModes(); applyMode(); update();
+});
 
 $('#copy').addEventListener('click', async () => {
   const btn = $('#copy span');
@@ -327,13 +432,14 @@ $('#copy').addEventListener('click', async () => {
   setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
 });
 
-/* Self-check: every mode builds, keeps the required line, and contains no em or en dashes */
-TASTE.modes.forEach(m => {
-  const empty = { mode: m.id, load: 'npx', variant: 'v2', avoid: [], readFormat: true, auditLevel: 'full' };
-  const t = buildTaste(empty, TASTE);
-  console.assert(t.includes(REQUIRED_LINE), `missing required line in ${m.id}`);
-  console.assert(![0x2013, 0x2014].some(c => t.includes(String.fromCharCode(c))), `dash found in ${m.id}`);
-});
+/* Self-check: every step of every skill builds from its default form, with no em or en dashes */
+SKILLS.filter(s => s.ready).forEach(s => s.modes.forEach(m => {
+  const t = s.build(readValues(s, m.id), s);
+  console.assert(t.trim(), `empty output for ${s.id}/${m.id}`);
+  console.assert(![0x2013, 0x2014].some(c => t.includes(String.fromCharCode(c))), `dash found in ${s.id}/${m.id}`);
+  if (s === TASTE) console.assert(t.includes(REQUIRED_LINE), `missing required line in ${m.id}`);
+  if (s === SPEC_KIT && m.id !== 'setup') console.assert(t.startsWith(`/speckit-${m.id}`), `wrong command for ${m.id}`);
+}));
 
 </script>
 </body>
