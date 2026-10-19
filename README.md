@@ -17,7 +17,7 @@ Open `index.html` in a browser. There is no build step or install. Tailwind is l
 |-------|--------|
 | [Taste](https://github.com/Leonxlnx/taste-skill) | Ready |
 | [Spec-Kit](https://github.github.com/spec-kit/quickstart.html) | Ready |
-| Impeccable | Coming soon |
+| [Impeccable](https://impeccable.style/docs/) | Ready |
 | Brandkit | Coming soon |
 
 ### Taste modes
@@ -32,6 +32,10 @@ Options include how the skill gets loaded (workspace file, `npx skills add`, or 
 ### Spec-Kit steps
 
 Spec-Kit runs as separate `/speckit-*` commands, each reviewed before the next, so the builder outputs one command per step. The steps follow the quickstart's full path: **Setup** (terminal commands to install the `specify` CLI and run `specify init`, for a new project or an existing repository), then **Constitution**, **Specify**, **Clarify**, **Plan**, **Checklist**, **Tasks**, **Analyze**, **Implement** and **Converge**. Clarify, Checklist and Analyze are quality gates you can skip for small features. Inputs are kept as you move between steps.
+
+### Impeccable modes
+
+Impeccable is one command, `/impeccable` (`$impeccable` in Codex), followed by a sub-command and a target. The builder groups its commands by intent: **Setup** (install, then `init` and optionally `document`), **Build new** (a description plus an optional brief taken from Impeccable's own shape interview, with shape-first, surface mode and mockup-first options), **Improve** (polish, bolder, quieter, distill, layout, typeset, colorize, animate, delight, overdrive, clarify, adapt, harden, onboard, optimize), **Evaluate** (critique, audit), **Design system** (document, extract), **Variations** (generate, live) and **Maintenance** (doctor, hooks).
 
 ## Layout
 
