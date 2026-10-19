@@ -13,6 +13,8 @@ function renderSkillPicker() {
   ).join('');
   const soon = SKILLS.filter(s => !s.ready).map(s => s.name);
   $('#skills-soon').textContent = soon.length ? `Coming soon: ${soon.join(', ')}` : '';
+  $('#skill-docs').innerHTML = SKILLS.filter(s => s.docs).map(s =>
+    `<a href="${esc(s.docs)}" target="_blank" rel="noopener" class="hover:text-paper">${esc(s.name)} docs</a>`).join('');
 }
 
 function renderModes() {
@@ -78,11 +80,21 @@ function readValues(s = skill, mode = modeOf[s.id]) {
   return v;
 }
 
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+let missing = [];
+
 function update() {
+  emptySlots.length = 0;
   const text = skill.build(readValues(), skill);
+  missing = [...new Set(emptySlots)];
+  const mode = skill.modes.find(m => m.id === modeOf[skill.id]);
   $('#prompt').value = text;
-  const words = text.trim().split(/\s+/).length;
-  $('#count').textContent = `${words} words`;
+  $('#output-label').textContent = mode.outputLabel || skill.outputLabel || 'Prompt for your agent';
+  $('#count').textContent = plural(text.trim().split(/\s+/).length, 'word');
+  // Semicolons: some slot labels contain commas
+  $('#slot-status').textContent = missing.length
+    ? `${plural(missing.length, 'slot')} still empty: ${missing.join('; ')}. Fill ${missing.length === 1 ? 'it' : 'them'} in the form, or after pasting.`
+    : 'Nothing left to fill.';
 }
 
 renderSkillPicker();
@@ -105,7 +117,8 @@ $('#copy').addEventListener('click', async () => {
   catch { $('#prompt').select(); ok = document.execCommand('copy'); }
   // Re-set to empty first so repeated copies are announced again
   $('#copy-status').textContent = '';
-  $('#copy-status').textContent = ok ? 'Prompt copied to clipboard.' : 'Copy failed. The prompt is selected; press Ctrl+C to copy it.';
+  $('#copy-status').textContent = !ok ? 'Copy failed. The prompt is selected; press Ctrl+C to copy it.'
+    : missing.length ? `Copied, with ${plural(missing.length, 'empty slot')} to fill after pasting.` : 'Copied. Nothing left to fill.';
   btn.textContent = ok ? 'Copied' : 'Copy failed';
   setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
 });

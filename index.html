@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Skill Prompt Builder</title>
+<title>Skill prompt builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -53,10 +53,10 @@
           <div class="lg:sticky lg:top-24">
             <div class="rounded-2xl border border-line bg-surface overflow-hidden">
               <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line">
-                <label for="prompt" class="text-sm font-medium">Your prompt</label>
+                <label for="prompt" id="output-label" class="text-sm font-medium">Prompt for your agent</label>
                 <div class="flex items-center gap-3">
-                  <span id="count" class="text-xs text-muted font-mono"></span>
-                  <button id="copy" type="button" class="rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                  <span id="count" class="text-xs text-muted font-mono whitespace-nowrap"></span>
+                  <button id="copy" type="button" class="whitespace-nowrap rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                     <i class="ph ph-copy" aria-hidden="true"></i><span>Copy</span>
                   </button>
                 </div>
@@ -64,7 +64,7 @@
               <textarea id="prompt" readonly spellcheck="false" class="block w-full h-[60vh] lg:h-[calc(100vh-12rem)] resize-none bg-transparent p-5 font-mono text-[13px] leading-relaxed text-paper/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent rounded-b-2xl"></textarea>
             </div>
             <p id="copy-status" class="sr-only" role="status" aria-live="polite"></p>
-            <p class="mt-3 text-xs text-muted">Anything in angle brackets is a slot you have not filled yet.</p>
+            <p id="slot-status" class="mt-3 text-xs text-muted"></p>
           </div>
         </div>
       </div>
@@ -74,11 +74,8 @@
   <footer class="px-4 sm:px-6 pb-12">
     <div class="max-w-7xl mx-auto">
       <div class="pt-8 border-t border-line flex flex-col sm:flex-row justify-between gap-4 text-sm text-muted">
-        <span>skillprompt. Prompt shapes for agent skills.</span>
-        <div class="flex gap-6">
-          <a href="https://www.tasteskill.dev/guide?view=full" target="_blank" rel="noopener" class="hover:text-paper">Taste guide</a>
-          <a href="https://github.com/Leonxlnx/taste-skill" target="_blank" rel="noopener" class="hover:text-paper">taste-skill on GitHub</a>
-        </div>
+        <span>Skill prompt builder. Prompt shapes for agent skills.</span>
+        <nav id="skill-docs" class="flex flex-wrap gap-x-6 gap-y-2" aria-label="Skill documentation"></nav>
       </div>
     </div>
   </footer>

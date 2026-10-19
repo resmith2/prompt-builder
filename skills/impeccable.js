@@ -2,9 +2,11 @@
 (() => {
   const IMPECCABLE = {
     id: 'impeccable', name: 'Impeccable', ready: true,
+    docs: 'https://impeccable.style/docs/',
+    outputLabel: 'Command for your agent chat',
     modes: [
-      { id: 'setup', label: 'Setup', hint: 'Install once in your terminal, then run init in your agent chat to write PRODUCT.md. document records an existing visual system in DESIGN.md.' },
-      { id: 'build', label: 'Build new', hint: 'Describe the outcome; no special command needed. Shape first returns a design brief and writes no code.' },
+      { id: 'setup', label: 'Setup', outputLabel: 'Terminal, then agent chat', hint: 'Install once in your terminal, then run init in your agent chat to write PRODUCT.md. document records an existing visual system in DESIGN.md.' },
+      { id: 'build', label: 'Build new', hint: 'Describe the outcome in plain words; no sub-command needed. Shape first returns a design brief and writes no code.' },
       { id: 'improve', label: 'Improve', hint: 'One focused pass on a named page, route or file. Refinement keeps what already works.' },
       { id: 'evaluate', label: 'Evaluate', hint: 'critique reviews the design and what holds it back. audit checks accessibility, performance and responsive behavior.' },
       { id: 'system', label: 'Design system', hint: 'document writes DESIGN.md from your code. extract pulls repeated patterns into shared components and tokens.' },

@@ -30,6 +30,7 @@ Report results inline before producing any new code.`;
 
   const TASTE = {
     id: 'taste', name: 'Taste', ready: true,
+    docs: 'https://www.tasteskill.dev/guide?view=full',
     modes: [
       { id: 'full', label: 'Full page', hint: 'Build a page from scratch: full brief, design read, deliverable, audit.' },
       { id: 'iterate', label: 'Iterate a section', hint: 'Redesign one weak section with a section-scoped design read and audit.' },
@@ -84,7 +85,7 @@ Report results inline before producing any new code.`;
     const lead = 'as your active skill for this conversation, in full, and treat it as the single source of truth that overrides defaults';
 
     if (v.load === 'file') out.push(`Open the ${variant.skill} SKILL.md in this workspace and load it ${lead}.`);
-    else if (v.load === 'paste') out.push(`Load this file ${lead}:\n\n<paste the ${variant.skill} SKILL.md here>`);
+    else if (v.load === 'paste') out.push(`Load this file ${lead}:\n\n${slot('', `paste the ${variant.skill} SKILL.md here`)}`);
     else out.push(`Load the ${variant.skill} skill ${lead}. If it is not installed yet, it installs with:\n  ${variant.cmd}`);
     out.push(REQUIRED_LINE);
 

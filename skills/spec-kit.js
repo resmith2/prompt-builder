@@ -2,8 +2,10 @@
 (() => {
   const SPEC_KIT = {
     id: 'spec-kit', name: 'Spec-Kit', ready: true,
+    docs: 'https://github.github.com/spec-kit/quickstart.html',
+    outputLabel: 'Command for your agent chat',
     modes: [
-      { id: 'setup', label: 'Setup', hint: 'Runs in your terminal, not agent chat. Installs the specify CLI (needs uv) and initializes the project.' },
+      { id: 'setup', label: 'Setup', outputLabel: 'Terminal commands', hint: 'Runs in your terminal, not agent chat. Installs the specify CLI (needs uv) and initializes the project.' },
       { id: 'constitution', label: 'Constitution', hint: 'Once per project. The ground rules every later step is checked against.' },
       { id: 'specify', label: 'Specify', hint: 'What to build and why. Leave the tech stack for the plan.' },
       { id: 'clarify', label: 'Clarify', hint: 'Quality gate. Asks targeted questions about gaps and folds the answers into the spec. Run it before planning.' },
@@ -73,14 +75,14 @@
         return lines.join('\n');
       }
       case 'constitution':
-        return `/speckit-constitution ${joinParts(sentence(v.principles) || '<core principles>', sentence(v.architecture), sentence(v.testing), sentence(v.standards))}`;
+        return `/speckit-constitution ${joinParts(sentence(v.principles) || slot('', 'core principles'), sentence(v.architecture), sentence(v.testing), sentence(v.standards))}`;
       case 'specify':
-        return `/speckit-specify ${joinParts(sentence(v.what) || '<what you are building and why>', labeled('Users', v.users), labeled('Key behaviors', v.behaviors),
+        return `/speckit-specify ${joinParts(sentence(v.what) || slot('', 'what you are building and why'), labeled('Users', v.users), labeled('Key behaviors', v.behaviors),
           labeled('Sample data', v.data), labeled('Must not change', v.boundaries), labeled('Not in this phase', v.notNow))}`;
       case 'clarify':
         return joinParts('/speckit-clarify', sentence(v.focus));
       case 'plan':
-        return `/speckit-plan ${joinParts(labeled('Backend and data', v.stack) || 'Backend and data: <stack>', labeled('Frontend', v.frontend),
+        return `/speckit-plan ${joinParts(labeled('Backend and data', v.stack) || `Backend and data: ${slot('', 'stack')}`, labeled('Frontend', v.frontend),
           labeled('APIs and integrations', v.apis), labeled('Constraints', v.constraints))}`;
       case 'implement':
         return joinParts('/speckit-implement', sentence(v.phase));
