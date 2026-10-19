@@ -301,9 +301,11 @@ function buildSpecKit(v) {
   switch (v.mode) {
     case 'setup': {
       const flags = joinParts(`--integration ${slot(v.integration, 'agent key')}`, v.script && `--script ${v.script}`, v.nonInteractive && '--non-interactive');
+      // Spaces would split the name into separate shell arguments
+      const name = slot(v.project.trim().replace(/\s+/g, '-'), 'project-name');
       const lines = v.existing === 'existing'
         ? ['# From the repository root, after committing or stashing your work', 'uv tool install specify-cli', `specify init --here --force ${flags}`]
-        : ['uv tool install specify-cli', `specify init ${slot(v.project, 'project-name')} ${flags}`, `cd ${slot(v.project, 'project-name')}`];
+        : ['uv tool install specify-cli', `specify init ${name} ${flags}`, `cd ${name}`];
       if (v.gitExt) lines.push('specify extension add git');
       return lines.join('\n');
     }
@@ -440,6 +442,7 @@ SKILLS.filter(s => s.ready).forEach(s => s.modes.forEach(m => {
   if (s === TASTE) console.assert(t.includes(REQUIRED_LINE), `missing required line in ${m.id}`);
   if (s === SPEC_KIT && m.id !== 'setup') console.assert(t.startsWith(`/speckit-${m.id}`), `wrong command for ${m.id}`);
 }));
+console.assert(buildSpecKit({ ...readValues(SPEC_KIT, 'setup'), project: ' task  board ' }).includes('specify init task-board '), 'project name with spaces not hyphenated');
 
 </script>
 </body>
