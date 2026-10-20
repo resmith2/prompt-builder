@@ -1,6 +1,9 @@
 # Impeccable: critique snapshots, detector cache, live-mode state
 .impeccable/
 
+# Archify: generated diagrams and their check receipts
+.archify/
+
 # Agent and editor settings
 .claude/
 .vscode/
