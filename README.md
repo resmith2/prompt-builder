@@ -17,10 +17,23 @@ What you type is kept when you switch steps or skills (until you reload the page
 
 | Skill | Status |
 |-------|--------|
+| [Archify](https://archify.si/guide) | Ready |
 | [Impeccable](https://impeccable.style/docs/) | Ready |
 | [Spec-Kit](https://github.github.com/spec-kit/quickstart.html) | Ready |
 | [Taste](https://www.tasteskill.dev/guide?view=full) | Ready |
 | Brandkit | Coming soon |
+
+### Archify modes
+
+Archify has no slash command; the prompt asks for it by name ("Use the archify skill...").
+
+- **Setup**: terminal command to install it (`npx skills add tt-a1i/archify -g`), or a non-interactive install for one agent, or a try-without-installing command.
+- **Describe**: a diagram from your own description, with an optional diagram type (or let Archify choose).
+- **From code**: traces a repository and draws its runtime structure: core components, one primary path, external dependencies and trust boundaries.
+- **Explainer**: a one-page answer to a question, conclusion first.
+- **Refine**: changes to a diagram Archify already made, in its `.archify/` folder.
+
+Describe, From code and Explainer take an optional audience and a dark or light theme.
 
 ### Impeccable modes
 
