@@ -19,6 +19,7 @@ What you type is kept when you switch steps or skills (until you reload the page
 |-------|--------|
 | [Archify](https://archify.si/guide) | Ready |
 | [Impeccable](https://impeccable.style/docs/) | Ready |
+| [Railway](https://railway.com/agents/claude) | Ready |
 | [Spec-Kit](https://github.github.com/spec-kit/quickstart.html) | Ready |
 | [Taste](https://www.tasteskill.dev/guide?view=full) | Ready |
 | Brandkit | Coming soon |
@@ -46,6 +47,20 @@ Impeccable is one command, `/impeccable` (`$impeccable` in Codex), followed by a
 - **Design system**: document, extract.
 - **Variations**: generate, live.
 - **Maintenance**: doctor, hooks.
+
+### Railway modes
+
+Railway's skills are slash commands in Claude Code (`/deploy`, `/database`, `/domain` and others); each prompt starts with one.
+
+- **Setup**: terminal commands to install the skills (the Claude Code plugin or the skills script), with optional Railway CLI install, login, project link or init, and the Railway MCP server.
+- **Deploy**: deploys local code, then optionally checks the logs and fixes errors.
+- **Database**: adds Postgres, MySQL, Redis or MongoDB and connects it to a service.
+- **Template**: deploys a marketplace template, with optional extras.
+- **Configure**: variables, resources, replicas and new environments.
+- **Domain**: a Railway domain, or your own with SSL and the DNS records to add.
+- **Debug**: reads deployment logs and metrics, fixes the cause and redeploys.
+
+Every mode except Setup and Template takes an optional service and environment.
 
 ### Spec-Kit steps
 
