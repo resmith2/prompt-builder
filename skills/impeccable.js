@@ -14,27 +14,23 @@
       { id: 'maintenance', label: 'Maintenance', hint: 'doctor finds stale context files and broken hooks. hooks controls the automatic design detector.' }
     ],
     improveCommands: [
-      { id: 'polish', label: 'polish: final quality pass before shipping' },
-      { id: 'bolder', label: 'bolder: more presence for safe or bland designs' },
-      { id: 'quieter', label: 'quieter: tone down loud or busy designs' },
-      { id: 'distill', label: 'distill: strip to essence, remove clutter' },
-      { id: 'layout', label: 'layout: spacing, rhythm and visual hierarchy' },
-      { id: 'typeset', label: 'typeset: typography hierarchy and fonts' },
-      { id: 'colorize', label: 'colorize: strategic color for flat or gray UIs' },
-      { id: 'animate', label: 'animate: purposeful motion and micro-interactions' },
-      { id: 'delight', label: 'delight: personality and memorable touches' },
-      { id: 'overdrive', label: 'overdrive: push past conventional limits' },
-      { id: 'clarify', label: 'clarify: UX copy, labels and error messages' },
-      { id: 'adapt', label: 'adapt: other screen sizes, devices or platforms' },
-      { id: 'harden', label: 'harden: errors, i18n and edge cases' },
-      { id: 'onboard', label: 'onboard: first-run flows and empty states' },
-      { id: 'optimize', label: 'optimize: diagnose and fix UI performance' }
+      { id: 'polish', group: 'Refine', label: 'polish: final quality pass before shipping' },
+      { id: 'bolder', group: 'Refine', label: 'bolder: more presence for safe or bland designs' },
+      { id: 'quieter', group: 'Refine', label: 'quieter: tone down loud or busy designs' },
+      { id: 'distill', group: 'Refine', label: 'distill: strip to essence, remove clutter' },
+      { id: 'layout', group: 'Enhance', label: 'layout: spacing, rhythm and visual hierarchy' },
+      { id: 'typeset', group: 'Enhance', label: 'typeset: typography hierarchy and fonts' },
+      { id: 'colorize', group: 'Enhance', label: 'colorize: strategic color for flat or gray UIs' },
+      { id: 'animate', group: 'Enhance', label: 'animate: purposeful motion and micro-interactions' },
+      { id: 'delight', group: 'Enhance', label: 'delight: personality and memorable touches' },
+      { id: 'overdrive', group: 'Enhance', label: 'overdrive: push past conventional limits' },
+      { id: 'clarify', group: 'Fix', label: 'clarify: UX copy, labels and error messages' },
+      { id: 'adapt', group: 'Fix', label: 'adapt: other screen sizes, devices or platforms' },
+      { id: 'harden', group: 'Refine', label: 'harden: errors, i18n and edge cases' },
+      { id: 'onboard', group: 'Refine', label: 'onboard: first-run flows and empty states' },
+      { id: 'optimize', group: 'Fix', label: 'optimize: diagnose and fix UI performance' }
     ],
     groups: [
-      { title: 'Agent', fields: [
-        { id: 'prefix', label: 'Command syntax', type: 'seg', modes: '*', value: '/',
-          options: [['/', 'Most agents: /impeccable'], ['$', 'Codex: $impeccable']] }
-      ]},
       { title: 'Install', fields: [
         { id: 'install', label: 'Install with', type: 'seg', modes: ['setup'], value: 'impeccable',
           options: [['impeccable', 'npx impeccable install'], ['skills', 'npx skills add']], hint: 'In the GitHub Copilot app it is built in: enable it under Settings, Experimental.' },
@@ -46,10 +42,10 @@
         { id: 'surface', label: 'Surface mode', type: 'seg', modes: ['build'], value: '',
           options: [['', 'Let it decide'], ['Persuade', 'Persuade'], ['Operate', 'Operate'], ['Read', 'Read'], ['Experience', 'Experience']],
           hint: 'Persuade: landing, pricing. Operate: app, dashboard, settings. Read: docs, articles. Experience: portfolio, gallery.' },
-        { id: 'mockup', label: 'Approach', type: 'seg', modes: ['build'], value: 'code', disabledWhen: 'shapeFirst',
-          options: [['code', 'Build directly'], ['mockup', 'Mockup first']], hint: 'Mockup first allows bolder directions but needs image generation in your agent. Not used with Shape first, which writes no code.' }
+        { id: 'mockup', label: 'Approach', type: 'seg', modes: ['build'], value: 'code', showWhen: { field: 'shapeFirst', is: [false] },
+          options: [['code', 'Build directly'], ['mockup', 'Mockup first']], hint: 'Mockup first allows bolder directions but needs image generation in your agent.' }
       ]},
-      { title: 'Brief (all optional)', fields: [
+      { title: 'Brief (optional)', collapsible: true, fields: [
         { id: 'purpose', label: 'What it is for', type: 'textarea', rows: 2, modes: ['build'], placeholder: 'The problem this surface must solve.' },
         { id: 'who', label: 'Who arrives', type: 'textarea', rows: 2, modes: ['build'], placeholder: 'Who reaches it, in what situation and state of mind.' },
         { id: 'success', label: 'Primary action and success', type: 'textarea', rows: 2, modes: ['build'], placeholder: 'The one thing they must understand or do, and what success looks like.' },
@@ -71,15 +67,19 @@
           options: [['doctor', 'doctor'], ['hooks on', 'hooks on'], ['hooks off', 'hooks off'], ['hooks status', 'hooks status']] }
       ]},
       { title: 'Target', fields: [
-        { id: 'target', label: 'Target', type: 'text', modes: ['improve', 'evaluate', 'system'], placeholder: 'the pricing page', hint: 'A page, route, component or file. Not used by document.' },
-        { id: 'context', label: 'Context (adapt only)', type: 'text', modes: ['improve'], placeholder: 'mobile, tablet, print...' },
+        { id: 'target', label: 'Target', type: 'text', modes: ['improve', 'evaluate', 'system'], placeholder: 'the pricing page', hint: 'A page, route, component or file.', showWhen: { field: 'systemCmd', is: ['extract'] } },
+        { id: 'context', label: 'Context', type: 'text', modes: ['improve'], placeholder: 'mobile, tablet, print...', hint: 'Where it must work.', showWhen: { field: 'improveCmd', is: ['adapt'] } },
         { id: 'problem', label: 'What feels wrong (optional)', type: 'textarea', rows: 2, modes: ['improve', 'evaluate'], placeholder: 'The cards all look the same and the main plan does not stand out.' },
         { id: 'keep', label: 'What to keep (optional)', type: 'textarea', rows: 2, modes: ['improve'], placeholder: 'Tier names, prices and the current color palette.' }
       ]},
       { title: 'Variants', fields: [
-        { id: 'count', label: 'How many', type: 'text', inputType: 'number', modes: ['variations'], value: '3', hint: 'Not used by live.' },
-        { id: 'direction', label: 'Direction', type: 'text', modes: ['variations'], placeholder: 'bold' },
-        { id: 'element', label: 'Element', type: 'text', modes: ['variations'], placeholder: 'the pricing cards' }
+        { id: 'count', label: 'How many', type: 'text', inputType: 'number', modes: ['variations'], value: '3', showWhen: { field: 'varCmd', is: ['generate'] } },
+        { id: 'direction', label: 'Direction', type: 'text', modes: ['variations'], placeholder: 'bold', showWhen: { field: 'varCmd', is: ['generate'] } },
+        { id: 'element', label: 'Element', type: 'text', modes: ['variations'], placeholder: 'the pricing cards', showWhen: { field: 'varCmd', is: ['generate'] } }
+      ]},
+      { title: 'Settings', fields: [
+        { id: 'prefix', label: 'Command syntax', type: 'seg', modes: '*', value: '/',
+          options: [['/', '/impeccable'], ['$', '$impeccable']], hint: 'Codex uses $impeccable. Most other agents use /impeccable.' }
       ]}
     ],
     build: buildImpeccable,

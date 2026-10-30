@@ -44,11 +44,6 @@ Report results inline before producing any new code.`;
     ],
     // `brief: true` fields go in the Brief block, in this order.
     groups: [
-      { title: 'Load the skill', fields: [
-        { id: 'load', label: 'Load method', type: 'seg', modes: '*', value: 'npx',
-          options: [['file', 'Workspace file'], ['npx', 'npx skills add'], ['paste', 'Paste SKILL.md']] },
-        { id: 'variant', label: 'Skill version', type: 'select', modes: '*', value: 'v2', optionsFrom: 'variants' }
-      ]},
       { title: 'The work', fields: [
         { id: 'section', label: 'Section to redesign', type: 'text', modes: ['iterate'], placeholder: 'Pricing, the hero, the features grid...' },
         { id: 'problem', label: 'What is wrong with it now', type: 'textarea', modes: ['iterate'], placeholder: 'Three equal cards, generic icons, copy reads like a template.' },
@@ -58,7 +53,8 @@ Report results inline before producing any new code.`;
         { id: 'placement', label: 'Where it goes', type: 'text', modes: ['add'], placeholder: 'After features, before pricing' },
         { id: 'target', label: 'What to audit', type: 'text', modes: ['audit'], placeholder: 'app/page.tsx, or the pricing section you just wrote' }
       ]},
-      { title: 'Brief', fields: [
+      // Every brief field fills a required slot in the prompt, unlike Impeccable's optional brief
+      { title: 'Brief (required)', fields: [
         { id: 'pageKind', label: 'Page kind', brief: true, type: 'textarea', rows: 2, modes: ['full'], placeholder: 'Marketing landing, single section, dashboard route, settings page, etc.' },
         { id: 'product', label: 'Product or brand', brief: true, type: 'textarea', rows: 2, modes: ['full', 'iterate', 'add'], placeholder: 'One line. What it is, who built it.' },
         { id: 'audience', label: 'Audience', brief: true, type: 'textarea', rows: 2, modes: ['full', 'add'], placeholder: 'One line. Who reads this page and what they need.' },
@@ -73,6 +69,11 @@ Report results inline before producing any new code.`;
         { id: 'readFormat', label: 'Spell out the design read format in the prompt', type: 'check', modes: ['full', 'iterate', 'add'], value: true },
         { id: 'auditLevel', label: 'Closing check', type: 'seg', modes: ['full', 'iterate', 'add'], value: 'full',
           options: [['short', 'Pre-flight line'], ['full', 'Six-gate audit']] }
+      ]},
+      { title: 'Load the skill', fields: [
+        { id: 'load', label: 'Load method', type: 'seg', modes: '*', value: 'npx',
+          options: [['file', 'Workspace file'], ['npx', 'npx skills add'], ['paste', 'Paste SKILL.md']] },
+        { id: 'variant', label: 'Skill version', type: 'select', modes: '*', value: 'v2', optionsFrom: 'variants' }
       ]}
     ],
     build: buildTaste,

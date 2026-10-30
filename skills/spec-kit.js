@@ -6,21 +6,23 @@
     outputLabel: 'Command for your agent chat',
     modes: [
       { id: 'setup', label: 'Setup', outputLabel: 'Terminal commands', wrap: 'off', hint: 'Runs in your terminal, not agent chat. Installs the specify CLI (needs uv) and initializes the project.' },
-      { id: 'constitution', label: 'Constitution', hint: 'Once per project. The ground rules every later step is checked against.' },
-      { id: 'specify', label: 'Specify', hint: 'What to build and why. Leave the tech stack for the plan.' },
-      { id: 'clarify', label: 'Clarify', hint: 'Quality gate. Asks targeted questions about gaps and folds the answers into the spec. Run it before planning.' },
-      { id: 'plan', label: 'Plan', hint: 'The tech stack and architecture go here, not in the spec.' },
-      { id: 'checklist', label: 'Checklist', hint: 'Quality gate. Generates a requirements-quality checklist. Tick items only once a reviewer agrees they hold.' },
-      { id: 'tasks', label: 'Tasks', hint: 'Breaks the design into a dependency-ordered tasks.md.' },
-      { id: 'analyze', label: 'Analyze', hint: 'Quality gate. Read-only check across spec, plan and tasks. Fix issues at the source and re-run.' },
-      { id: 'implement', label: 'Implement', hint: 'Runs tasks.md in dependency order. Scope it to one phase for large features.' },
-      { id: 'converge', label: 'Converge', hint: 'Checks the code against spec, plan and tasks. Repeat implement and converge until it reports Converged.' }
+      { id: 'constitution', label: 'Constitution', step: 1, hint: 'Once per project. The ground rules every later step is checked against.' },
+      { id: 'specify', label: 'Specify', step: 2, hint: 'What to build and why. Leave the tech stack for the plan.' },
+      { id: 'clarify', label: 'Clarify', step: 3, gate: true, hint: 'Quality gate. Asks targeted questions about gaps and folds the answers into the spec. Run it before planning.' },
+      { id: 'plan', label: 'Plan', step: 4, hint: 'The tech stack and architecture go here, not in the spec.' },
+      { id: 'checklist', label: 'Checklist', step: 5, gate: true, hint: 'Quality gate. Generates a requirements-quality checklist. Tick items only once a reviewer agrees they hold.' },
+      { id: 'tasks', label: 'Tasks', step: 6, hint: 'Breaks the design into a dependency-ordered tasks.md.' },
+      { id: 'analyze', label: 'Analyze', step: 7, gate: true, hint: 'Quality gate. Read-only check across spec, plan and tasks. Fix issues at the source and re-run.' },
+      { id: 'implement', label: 'Implement', step: 8, hint: 'Runs tasks.md in dependency order. Scope it to one phase for large features.' },
+      { id: 'converge', label: 'Converge', step: 9, hint: 'Checks the code against spec, plan and tasks. Repeat implement and converge until it reports Converged.' }
     ],
     groups: [
       { title: 'Project', fields: [
         { id: 'existing', label: 'Project type', type: 'seg', modes: ['setup'], value: 'new',
-          options: [['new', 'New project'], ['existing', 'Existing repository']] },
-        { id: 'project', label: 'Project name', type: 'text', modes: ['setup'], placeholder: 'taskify', hint: 'New projects only. Becomes the folder name; characters other than letters, digits, dot, dash and underscore become dashes.' },
+          options: [['new', 'New project'], ['existing', 'Existing repository']],
+          hint: 'Existing repository runs init with --force, which can replace files Spec Kit manages. Commit or stash first.' },
+        { id: 'project', label: 'Project name', type: 'text', modes: ['setup'], placeholder: 'taskify', hint: 'Becomes the folder name.',
+          showWhen: { field: 'existing', is: ['new'] }, preview: name => previewName(name) },
         { id: 'integration', label: 'Coding agent (--integration key)', type: 'text', modes: ['setup'], value: 'claude',
           list: ['claude', 'copilot', 'gemini', 'cursor-agent', 'codex', 'windsurf', 'opencode', 'qwen'], hint: 'Run specify init --help for the full list.' },
         { id: 'script', label: 'Script variant', type: 'seg', modes: ['setup'], value: '',
@@ -60,18 +62,32 @@
       if (modeId !== 'setup') return console.assert(text.startsWith(`/speckit-${modeId}`), `wrong command for ${modeId}`);
       console.assert(buildSpecKit({ ...values, project: ' task  board ' }).includes('specify init task-board '), 'project name with spaces not hyphenated');
       console.assert(buildSpecKit({ ...values, project: 'My App & "x"; rm' }).includes('specify init My-App-x-rm '), 'project name not shell-safe');
+      emptySlots.length = 0;
+      buildSpecKit({ ...values, existing: 'existing', project: '' });
+      console.assert(!emptySlots.length, 'existing repository reports a project-name slot');
+      console.assert(previewName('My App') === 'Will be created as My-App' && previewName('ok') === '', 'name preview wrong');
     }
   };
+
+  // Spaces and shell metacharacters (& ; " $ ...) would break or change the command; keep a safe folder name
+  const safeName = s => (s || '').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
+  function previewName(raw) {
+    const name = safeName(raw);
+    if (!(raw || '').trim() || name === raw.trim()) return '';
+    return name ? `Will be created as ${name}` : 'No usable characters. Use letters, digits, dot, dash or underscore.';
+  }
 
   function buildSpecKit(v) {
     switch (v.mode) {
       case 'setup': {
         const flags = joinParts(`--integration ${slot(v.integration, 'agent key')}`, v.script && `--script ${v.script}`, v.nonInteractive && '--non-interactive');
-        // Spaces and shell metacharacters (& ; " $ ...) would break or change the command; keep a safe folder name
-        const name = slot(v.project.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, ''), 'project-name');
-        const lines = v.existing === 'existing'
-          ? ['# From the repository root, after committing or stashing your work', 'uv tool install specify-cli', `specify init --here --force ${flags}`]
-          : ['uv tool install specify-cli', `specify init ${name} ${flags}`, `cd ${name}`];
+        if (v.existing === 'existing') {
+          const lines = ['# From the repository root, after committing or stashing your work', 'uv tool install specify-cli', `specify init --here --force ${flags}`];
+          if (v.gitExt) lines.push('specify extension add git');
+          return lines.join('\n');
+        }
+        const name = slot(safeName(v.project), 'project-name');
+        const lines = ['uv tool install specify-cli', `specify init ${name} ${flags}`, `cd ${name}`];
         if (v.gitExt) lines.push('specify extension add git');
         return lines.join('\n');
       }

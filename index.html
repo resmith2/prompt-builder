@@ -16,7 +16,7 @@
         fontFamily: { sans: ['Geist', 'system-ui', 'sans-serif'], mono: ['"Geist Mono"', 'ui-monospace', 'monospace'] },
         colors: {
           ink: '#0f0f0d', surface: '#171714', raised: '#1f1f1b', line: '#2c2b26',
-          paper: '#ece7dc', muted: '#948e80', accent: '#d8a55c'
+          paper: '#ece7dc', muted: '#948e80', accent: '#d8a55c', danger: '#e8907a'
         }
       }
     }
@@ -31,6 +31,7 @@
   <section id="builder" class="px-4 sm:px-6 pt-12 md:pt-16 pb-24 bg-[radial-gradient(ellipse_at_top,rgba(216,165,92,.06),transparent_60%)]">
     <div class="max-w-7xl mx-auto">
       <h1 class="text-[clamp(1.75rem,3vw,2.5rem)] font-semibold tracking-[-0.03em] leading-[1.05]">Skill prompt builder</h1>
+      <p class="mt-3 text-muted max-w-2xl">Pick an agent skill you have installed, fill in what it needs, and copy a ready prompt or command.</p>
 
       <!-- Skill picker -->
       <div class="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -42,6 +43,7 @@
       <div class="mt-8">
         <div class="seg-row rounded-full sm:rounded-3xl border border-line bg-surface p-1" role="radiogroup" aria-label="What are you working on" id="mode-picker"></div>
       </div>
+      <p id="mode-key" class="mt-2 text-xs text-muted" hidden><i class="gate-dot ml-0 mr-1.5" aria-hidden="true"></i>Quality gate: optional on small features.</p>
       <p id="mode-hint" class="mt-3 text-sm text-muted"></p>
 
       <div class="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -53,18 +55,20 @@
           <div class="lg:sticky lg:top-24">
             <div id="output" class="scroll-mt-6 rounded-2xl border border-line bg-surface overflow-hidden">
               <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line">
-                <label for="prompt" id="output-label" class="text-sm font-medium">Prompt for your agent</label>
+                <h2 id="output-label" class="text-sm font-medium">Prompt for your agent</h2>
                 <div class="flex items-center gap-3">
                   <span id="count" class="text-xs text-muted font-mono whitespace-nowrap"></span>
-                  <button id="copy" data-copy type="button" class="whitespace-nowrap rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                  <button id="copy" data-copy type="button" class="min-w-[7.5rem] justify-center whitespace-nowrap rounded-full bg-paper text-ink text-sm font-medium px-4 py-1.5 hover:bg-white transition-colors inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                     <i class="ph ph-copy" aria-hidden="true"></i><span>Copy</span>
                   </button>
                 </div>
               </div>
-              <textarea id="prompt" readonly spellcheck="false" class="block w-full h-[60vh] lg:h-[calc(100vh-15rem)] resize-none bg-transparent p-5 font-mono text-[13px] leading-relaxed text-paper/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent rounded-b-2xl"></textarea>
+              <!-- A pre, not a textarea, so empty slots can be highlighted; it sizes to its content up to a cap -->
+              <pre id="prompt" tabindex="0" role="textbox" aria-readonly="true" aria-multiline="true" aria-labelledby="output-label" class="block w-full min-h-[7rem] max-h-[60vh] lg:max-h-[calc(100vh-15rem)] overflow-auto p-5 font-mono text-[13px] leading-relaxed text-paper/90 whitespace-pre-wrap break-words focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent rounded-b-2xl"></pre>
             </div>
             <p id="copy-status" class="sr-only" role="status" aria-live="polite"></p>
             <p id="slot-status" class="mt-3 text-xs text-muted"></p>
+            <button id="next-step" type="button" hidden class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm text-paper hover:border-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"><span></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
           </div>
         </div>
       </div>
@@ -83,10 +87,10 @@
 </main>
 
 <!-- Below lg the output sits under a long form; keep Copy within thumb reach -->
-<div class="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 backdrop-blur px-4 py-3 pb-[max(.75rem,env(safe-area-inset-bottom))]">
+<div id="copy-bar" class="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 backdrop-blur px-4 py-3 pb-[max(.75rem,env(safe-area-inset-bottom))]">
   <div class="max-w-7xl mx-auto flex items-center gap-3">
     <a href="#output" id="bar-summary" class="min-w-0 flex-1 truncate text-sm text-muted underline decoration-line underline-offset-4 hover:text-paper"></a>
-    <button data-copy type="button" class="shrink-0 h-11 rounded-full bg-paper text-ink text-sm font-medium px-5 inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+    <button data-copy type="button" class="shrink-0 h-11 min-w-[7.5rem] justify-center rounded-full bg-paper text-ink text-sm font-medium px-5 inline-flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
       <i class="ph ph-copy" aria-hidden="true"></i><span>Copy</span>
     </button>
   </div>

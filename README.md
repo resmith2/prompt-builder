@@ -8,10 +8,10 @@ Open `index.html` in a browser. There is no build step or install. Tailwind is l
 
 1. Pick a skill. Ready skills are listed A to Z, followed by the ones coming soon.
 2. Pick what you are working on (the mode or step).
-3. Fill in the form. The output updates as you type. Anything still in `<angle brackets>` is a slot you have not filled yet, and the line under the output lists every empty slot.
+3. Fill in the form. The output updates as you type. Fields appear only when the current choice uses them. Anything still in `<angle brackets>` is a slot you have not filled yet: it is highlighted in the output, and the line under the output lists every empty slot.
 4. Click **Copy** and paste the result where the output label says: your agent's chat, or your terminal for setup steps. If slots are still empty, Copy tells you how many.
 
-What you type is kept when you switch steps or skills (until you reload the page). On phones, a bar at the bottom of the screen keeps **Copy** and the empty-slot count in reach while you fill in the form. The footer links to the docs for the selected skill.
+What you type is kept when you switch steps or skills (until you reload the page). On phones, a bar at the bottom of the screen keeps **Copy** and the empty-slot count in reach while you fill in the form, and steps that don't fit fade at the edge to show the row scrolls. The footer links to the docs for the selected skill.
 
 ## Skills
 
@@ -41,8 +41,8 @@ Describe, From code and Explainer take an optional audience and a dark or light 
 Impeccable is one command, `/impeccable` (`$impeccable` in Codex), followed by a sub-command and a target. The builder groups its commands by intent:
 
 - **Setup**: install, then `init` and optionally `document`.
-- **Build new**: a description plus an optional brief taken from Impeccable's own shape interview. Options for shape first (a brief, no code), surface mode, and mockup first. The mockup option is disabled while shape first is on, since shape writes no code.
-- **Improve**: polish, bolder, quieter, distill, layout, typeset, colorize, animate, delight, overdrive, clarify, adapt, harden, onboard, optimize.
+- **Build new**: a description plus an optional brief taken from Impeccable's own shape interview. Options for shape first (a brief, no code), surface mode, and mockup first. The mockup option is hidden while shape first is on, since shape writes no code. The brief folds away and shows how many of its fields are filled.
+- **Improve**: grouped as in Impeccable's command table. Refine: polish, bolder, quieter, distill, harden, onboard. Enhance: layout, typeset, colorize, animate, delight, overdrive. Fix: clarify, adapt, optimize.
 - **Evaluate**: critique, audit.
 - **Design system**: document, extract.
 - **Variations**: generate, live.
@@ -64,9 +64,9 @@ Every mode except Setup and Template takes an optional service and environment.
 
 ### Spec-Kit steps
 
-Spec-Kit runs as separate `/speckit-*` commands, each reviewed before the next, so the builder outputs one command per step. The steps follow the quickstart's full path: **Setup** (terminal commands to install the `specify` CLI and run `specify init`, for a new project or an existing repository), then **Constitution**, **Specify**, **Clarify**, **Plan**, **Checklist**, **Tasks**, **Analyze**, **Implement** and **Converge**. Clarify, Checklist and Analyze are quality gates you can skip for small features.
+Spec-Kit runs as separate `/speckit-*` commands, each reviewed before the next, so the builder outputs one command per step. The steps follow the quickstart's full path: **Setup** (terminal commands to install the `specify` CLI and run `specify init`, for a new project or an existing repository), then **Constitution**, **Specify**, **Clarify**, **Plan**, **Checklist**, **Tasks**, **Analyze**, **Implement** and **Converge**. Steps are numbered 1 to 9 as in the quickstart. Clarify, Checklist and Analyze carry a dot: they are quality gates you can skip for small features. After you copy a step, a button offers the next one.
 
-The project name in Setup is made shell-safe: anything other than letters, digits, dot, dash and underscore becomes a dash, so `My App & co` becomes `My-App-co`.
+The project name in Setup is made shell-safe: anything other than letters, digits, dot, dash and underscore becomes a dash, so `My App & co` becomes `My-App-co`. The field shows the cleaned name as you type. For an existing repository the name field goes away, and the hint warns that `--force` can replace files Spec Kit manages.
 
 ### Taste modes
 
@@ -81,6 +81,7 @@ Options include how the skill gets loaded (workspace file, `npx skills add`, or 
 
 - Skill, step and option pickers are native radio buttons: one Tab stop each, arrow keys move between options, and every control has a visible focus ring.
 - Copy results, including failures and empty slots, are announced to screen readers.
+- Number fields reject values outside 1 to 10 with an inline error, and a bad value never reaches the output.
 - Placeholder text meets 4.5:1 contrast and field borders meet 3:1.
 - Touch targets are at least 44px on touch screens, and field text is 16px on phones so iOS doesn't zoom in on focus.
 
@@ -114,8 +115,13 @@ Optional settings:
 | Skill | `selfCheck(text, modeId, values)` | Extra `console.assert` checks run when the page loads. |
 | Mode | `outputLabel` | Overrides the skill's label for one step, such as "Terminal commands". |
 | Mode | `wrap: 'off'` | Stops the output from wrapping lines, for shell commands. |
-| Field | `disabledWhen: '<checkbox id>'` | Disables the field while that checkbox is ticked. |
+| Mode | `step: n` | Numbers the step in the picker and offers the next step after Copy. For skills that run in order. |
+| Mode | `gate: true` | Marks an optional quality-check step with a dot. |
+| Group | `collapsible: true` | Folds the group into a panel that shows how many fields are filled. For long optional briefs. |
+| Field | `showWhen: { field, is: [...] }` | Shows the field only while that other field holds one of the values. Use `is: [false]` for an unticked checkbox. The rule is ignored in modes where the other field isn't shown. |
+| Field | `preview(value)` | Returns a note shown under the field as you type, such as the cleaned project name. |
 | Field | `inputType: 'number'` | Makes a text field a number input (1 to 10). |
 | Field | `list: [...]` | Suggestions shown under a text field. |
+| Options | `group` | On a select's options, groups them under headings. |
 
-When the page loads, it builds every step of every skill and logs a failed `console.assert` if any output is empty or has em or en dashes.
+When the page loads, it builds every step of every skill and logs a failed `console.assert` if any output is empty or has em or en dashes, or if a `showWhen` points at a field that doesn't exist.

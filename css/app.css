@@ -1,4 +1,6 @@
 :root { color-scheme: dark; }
+/* The hidden attribute must win over display utilities like inline-flex */
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { background: #0f0f0d; color: #ece7dc; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 .grain::before {
@@ -12,26 +14,42 @@ body { background: #0f0f0d; color: #ece7dc; font-family: Geist, system-ui, sans-
 }
 .field-input::placeholder { color: #8a8579; }
 .field-input:focus { outline: none; border-color: #d8a55c; background: #1f1f1b; }
-.chip input, .pill input { position: absolute; opacity: 0; pointer-events: none; }
-.chip span { display: inline-block; border: 1px solid #68645b; border-radius: 999px; padding: .35rem .8rem; font-size: .82rem; color: #948e80; cursor: pointer; transition: all .2s; }
-.pill span { display: inline-block; border: 1px solid #68645b; border-radius: 999px; padding: .625rem 1.25rem; font-size: .875rem; font-weight: 500; color: #ece7dc; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s; }
-.pill span:hover { border-color: #948e80; }
-.chip input:checked + span, .pill input:checked + span { background: #ece7dc; color: #0f0f0d; border-color: #ece7dc; }
-.chip input:focus-visible + span, .seg input:focus-visible + span, .pill input:focus-visible + span { outline: 2px solid #d8a55c; outline-offset: 2px; }
-.seg input { position: absolute; opacity: 0; pointer-events: none; }
-.seg span { display: block; padding: .55rem 1rem; border-radius: 999px; font-size: .88rem; color: #948e80; cursor: pointer; transition: all .25s; white-space: nowrap; }
-.seg input:checked + span { background: #ece7dc; color: #0f0f0d; }
+/* `>` child selectors: pills hold nested spans (sr-only text) that must not get pill styling */
+.chip > input, .pill > input, .seg > input { position: absolute; opacity: 0; pointer-events: none; }
+.chip > span { display: inline-block; border: 1px solid #68645b; border-radius: 999px; padding: .35rem .8rem; font-size: .82rem; color: #948e80; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s; }
+.pill > span { display: inline-block; border: 1px solid #68645b; border-radius: 999px; padding: .625rem 1.25rem; font-size: .875rem; font-weight: 500; color: #ece7dc; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.pill > span:hover { border-color: #948e80; }
+.chip > input:checked + span { background: #ece7dc; color: #0f0f0d; border-color: #ece7dc; }
+/* The skill pick is an outline so the step row below stays the one filled, working control */
+.pill > input:checked + span { border-color: #d8a55c; box-shadow: inset 0 0 0 1px #d8a55c; }
+.chip > input:focus-visible + span, .seg > input:focus-visible + span, .pill > input:focus-visible + span { outline: 2px solid #d8a55c; outline-offset: 2px; }
+.seg > span { display: block; padding: .55rem 1rem; border-radius: 999px; font-size: .88rem; color: #948e80; cursor: pointer; transition: background-color .25s, color .25s; white-space: nowrap; }
+.seg > input:checked + span { background: #ece7dc; color: #0f0f0d; }
+.gate-dot { display: inline-block; width: .375rem; height: .375rem; margin-left: .4rem; border-radius: 999px; background: #d8a55c; vertical-align: middle; }
+mark.slot { background: rgba(216, 165, 92, .14); color: #f0c58a; border-radius: .25rem; text-decoration: underline dotted rgba(216, 165, 92, .7); text-underline-offset: 3px; }
+#prompt.nowrap { white-space: pre; overflow-wrap: normal; }
+details[data-group] > summary { list-style: none; }
+details[data-group] > summary::-webkit-details-marker { display: none; }
+details[data-group][open] .caret { transform: rotate(180deg); }
+.caret { transition: transform .2s; }
 /* Segmented rows wrap on wide screens; on phones they stay one row and scroll sideways, so pills never split mid-shape */
 .seg-row { display: inline-flex; flex-wrap: wrap; max-width: 100%; }
 @media (max-width: 639px) {
   .field-input { font-size: 1rem; } /* iOS Safari zooms into inputs under 16px */
   .seg-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .seg-row::-webkit-scrollbar { display: none; }
+  /* Fade whichever edge still hides options, so phones show there is more to scroll */
+  .seg-row.fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); }
+  .seg-row.fade-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); }
+  .seg-row.fade-l.fade-r { -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); }
 }
 /* 44px touch targets on touch screens */
 @media (pointer: coarse) {
-  .seg span { padding-block: .8rem; }
-  .chip span { padding-block: .7rem; }
+  .seg > span { padding-block: .8rem; }
+  .chip > span { padding-block: .7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip > span, .pill > span, .seg > span, .caret { transition: none; }
 }
 ::selection { background: rgba(216, 165, 92, .35); color: #ece7dc; }
 #prompt::-webkit-scrollbar { width: 8px; }
