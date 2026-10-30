@@ -22,6 +22,7 @@ What you type is kept when you switch steps or skills (until you reload the page
 | [Railway](https://railway.com/agents/claude) | Ready |
 | [Spec-Kit](https://github.github.com/spec-kit/quickstart.html) | Ready |
 | [Taste](https://www.tasteskill.dev/guide?view=full) | Ready |
+| [Vercel](https://vercel.com/docs/agent-resources/vercel-plugin) | Ready |
 | Brandkit | Coming soon |
 
 ### Archify modes
@@ -76,6 +77,17 @@ The project name in Setup is made shell-safe: anything other than letters, digit
 - **Audit output**: no new code; runs the six-gate audit on something the agent already built.
 
 Options include how the skill gets loaded (workspace file, `npx skills add`, or pasting SKILL.md), which skill version to use (v2, legacy v1, or the full repo), whether the prompt spells out the design-read format, and whether it closes with the pre-flight line or the full six-gate audit.
+
+### Vercel modes
+
+The Vercel plugin (`vercel/vercel-plugin`) adds four slash commands and 33 on-demand skills. Commands start with `/vercel-plugin:` (`/vercel:` in OpenCode).
+
+- **Setup**: terminal commands to install the plugin (`npx plugins add vercel/vercel-plugin`, or the OpenCode command), with optional lines to turn off its telemetry and run its doctor.
+- **Bootstrap**: links the project, provisions environment variables and sets up a database, with optional notes on what to set up.
+- **Deploy**: a preview, or production with `prod`.
+- **Env vars**: list, pull, add, remove or diff, with a variable name for add and remove and an optional environment.
+- **Status**: project status, recent deployments and environments.
+- **Ask a skill**: pick one of the 33 skills (grouped as AI and agents, Deploy and project, Backend and data, Performance and edge) and describe what you need.
 
 ## Accessibility
 
